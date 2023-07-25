@@ -1,0 +1,20 @@
+-- Create the DB
+CREATE DATABASE UserDatabase;
+GO
+
+-- Use the DB
+USE UserDatabase;
+GO
+
+-- Create a table Users
+CREATE TABLE Users (
+    Id INT PRIMARY KEY,
+    FirstName NVARCHAR(50),
+    LastName NVARCHAR(50),
+    BirthOfDate INT,
+    Email NVARCHAR(100),
+    Password NVARCHAR(11),
+    Phone NVARCHAR(20),
+    City NVARCHAR(50),
+    Country NVARCHAR(50)
+);
