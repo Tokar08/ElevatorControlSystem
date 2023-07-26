@@ -1,0 +1,15 @@
+C:\Users\kagu_rhick\source\repos\GeneratePassByRole\GeneratePassByRole\obj\Debug\net7.0\GeneratePassByRole.csproj.AssemblyReference.cache
+C:\Users\kagu_rhick\source\repos\GeneratePassByRole\GeneratePassByRole\obj\Debug\net7.0\GeneratePassByRole.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\kagu_rhick\source\repos\GeneratePassByRole\GeneratePassByRole\obj\Debug\net7.0\GeneratePassByRole.AssemblyInfoInputs.cache
+C:\Users\kagu_rhick\source\repos\GeneratePassByRole\GeneratePassByRole\obj\Debug\net7.0\GeneratePassByRole.AssemblyInfo.cs
+C:\Users\kagu_rhick\source\repos\GeneratePassByRole\GeneratePassByRole\obj\Debug\net7.0\GeneratePassByRole.csproj.CoreCompileInputs.cache
+C:\Users\kagu_rhick\source\repos\GeneratePassByRole\GeneratePassByRole\bin\Debug\net7.0\GeneratePassByRole.exe
+C:\Users\kagu_rhick\source\repos\GeneratePassByRole\GeneratePassByRole\bin\Debug\net7.0\GeneratePassByRole.deps.json
+C:\Users\kagu_rhick\source\repos\GeneratePassByRole\GeneratePassByRole\bin\Debug\net7.0\GeneratePassByRole.runtimeconfig.json
+C:\Users\kagu_rhick\source\repos\GeneratePassByRole\GeneratePassByRole\bin\Debug\net7.0\GeneratePassByRole.dll
+C:\Users\kagu_rhick\source\repos\GeneratePassByRole\GeneratePassByRole\bin\Debug\net7.0\GeneratePassByRole.pdb
+C:\Users\kagu_rhick\source\repos\GeneratePassByRole\GeneratePassByRole\obj\Debug\net7.0\GeneratePassByRole.dll
+C:\Users\kagu_rhick\source\repos\GeneratePassByRole\GeneratePassByRole\obj\Debug\net7.0\refint\GeneratePassByRole.dll
+C:\Users\kagu_rhick\source\repos\GeneratePassByRole\GeneratePassByRole\obj\Debug\net7.0\GeneratePassByRole.pdb
+C:\Users\kagu_rhick\source\repos\GeneratePassByRole\GeneratePassByRole\obj\Debug\net7.0\GeneratePassByRole.genruntimeconfig.cache
+C:\Users\kagu_rhick\source\repos\GeneratePassByRole\GeneratePassByRole\obj\Debug\net7.0\ref\GeneratePassByRole.dll
