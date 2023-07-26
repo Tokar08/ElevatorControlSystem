@@ -1,0 +1,8 @@
+C:\Users\kagu_rhick\source\repos\FirstTryCreateApp\FirstTryCreateApp\bin\Debug\FirstTryCreateApp.exe.config
+C:\Users\kagu_rhick\source\repos\FirstTryCreateApp\FirstTryCreateApp\bin\Debug\FirstTryCreateApp.exe
+C:\Users\kagu_rhick\source\repos\FirstTryCreateApp\FirstTryCreateApp\bin\Debug\FirstTryCreateApp.pdb
+C:\Users\kagu_rhick\source\repos\FirstTryCreateApp\FirstTryCreateApp\obj\Debug\FirstTryCreateApp.csproj.AssemblyReference.cache
+C:\Users\kagu_rhick\source\repos\FirstTryCreateApp\FirstTryCreateApp\obj\Debug\FirstTryCreateApp.csproj.SuggestedBindingRedirects.cache
+C:\Users\kagu_rhick\source\repos\FirstTryCreateApp\FirstTryCreateApp\obj\Debug\FirstTryCreateApp.csproj.CoreCompileInputs.cache
+C:\Users\kagu_rhick\source\repos\FirstTryCreateApp\FirstTryCreateApp\obj\Debug\FirstTryCreateApp.exe
+C:\Users\kagu_rhick\source\repos\FirstTryCreateApp\FirstTryCreateApp\obj\Debug\FirstTryCreateApp.pdb
