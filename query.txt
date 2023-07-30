@@ -1,0 +1,137 @@
+IF EXISTS (SELECT * FROM sys.databases WHERE name = 'GrainElevatorDB') 
+BEGIN 
+    ALTER DATABASE GrainElevatorDB SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE GrainElevatorDB;
+END
+
+CREATE DATABASE GrainElevatorDB;
+USE GrainElevatorDB;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'CMR')
+    DROP TABLE CMR;
+
+CREATE TABLE CMR
+(
+    Id INT PRIMARY KEY,
+    ArrivalDate DateTime  NOT NULL,
+    VehicleNumber NVARCHAR(8)  NOT NULL,
+    ItemOver NVARCHAR(MAX)  NOT NULL,
+    Crop NVARCHAR(MAX)  NOT NULL,
+    Reproduction NVARCHAR(MAX)  NOT NULL,
+);
+
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'AnalysisCard')
+    DROP TABLE AnalysisCard;
+
+CREATE TABLE AnalysisCard
+(
+    Id INT PRIMARY KEY,
+    ArrivalDate DateTime NOT NULL,
+    VehicleNumber NVARCHAR(8)  NOT NULL,
+    ItemOver NVARCHAR(MAX)  NOT NULL,
+    Crop NVARCHAR(MAX)  NOT NULL,
+    Reproduction NVARCHAR(MAX)  NOT NULL,
+	PhysicalWeight INT  NOT NULL,
+	WeedMoisture FLOAT  NOT NULL,
+	Humidity FLOAT  NOT NULL,
+	IsProduction BIT NOT NULL,
+	Temperature FLOAT NULL,
+	Comment NVARCHAR(MAX) NULL,
+);
+
+--FOR TEST
+INSERT INTO CMR (Id, ArrivalDate, VehicleNumber, ItemOver, Crop, Reproduction) VALUES (1,' 01/01/2000','asd','dsa','asd','dsa');
+
+
+INSERT INTO AnalysisCard (Id, ArrivalDate, VehicleNumber, ItemOver, Crop, Reproduction,PhysicalWeight, WeedMoisture, Humidity, IsProduction, Temperature, Comment)
+SELECT Id, ArrivalDate, VehicleNumber, ItemOver, Crop, Reproduction,100, 21.2, 25.332, 1, 37.2, 'Norm'
+FROM CMR;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'IPB')
+    DROP TABLE IPB;
+CREATE TABLE IPB
+(
+    Id INT PRIMARY KEY,
+	ArrivalDate DateTime NOT NULL,
+    VehicleNumber NVARCHAR(8)  NOT NULL,
+    ItemOver NVARCHAR(MAX)  NOT NULL,
+    Crop NVARCHAR(MAX)  NOT NULL,
+    Reproduction NVARCHAR(MAX)  NOT NULL,
+	PhysicalWeight INT  NOT NULL,
+	WeedMoisture FLOAT  NOT NULL,
+	Humidity FLOAT  NOT NULL,
+    IsProduction BIT NOT NULL,
+	BaseWeedMoisture FLOAT NOT NULL,
+	BaseHumidity FLOAT NOT NULL,
+	Shrinkage INT NOT NULL,
+	WeedLoss INT NOT NULL,
+	AccountWeight INT NOT NULL,
+	Temperature FLOAT NULL,
+	Comment NVARCHAR(MAX) NULL,
+
+);
+
+INSERT INTO IPB (Id, ArrivalDate, VehicleNumber, ItemOver, Crop, Reproduction, PhysicalWeight, WeedMoisture, Humidity, IsProduction, BaseWeedMoisture, BaseHumidity, Shrinkage, WeedLoss, AccountWeight, Temperature, Comment)
+SELECT Id, ArrivalDate, VehicleNumber, ItemOver, Crop, Reproduction, PhysicalWeight, WeedMoisture, Humidity, IsProduction, 12.2, 32.2, 32, 43, 23, Temperature, Comment
+FROM AnalysisCard;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'Register')
+    DROP TABLE Register;
+
+Create TABLE Register
+(
+    Id INT PRIMARY KEY,
+    ArrivalDate DateTime NOT NULL,
+    VehicleNumber NVARCHAR(8)  NOT NULL,
+    ItemOver NVARCHAR(MAX)  NOT NULL,
+    Crop NVARCHAR(MAX)  NOT NULL,
+    Reproduction NVARCHAR(MAX)  NOT NULL,
+	PhysicalWeight INT  NOT NULL,
+	WeedMoisture FLOAT  NOT NULL,
+	Humidity FLOAT  NOT NULL,
+    IsProduction BIT NOT NULL,
+	BaseWeedMoisture FLOAT NOT NULL,
+	BaseHumidity FLOAT NOT NULL,
+	Shrinkage INT NOT NULL,
+	WeedLoss INT NOT NULL,
+	AccountWeight INT NOT NULL,
+	RegisterNumber INT NOT NULL,
+    FinalPhysicalWeight FLOAT NOT NULL,
+    FinalShrinkage FLOAT NOT NULL,
+	FinalWeedLoss FLOAT NOT NULL,
+	FinalAccountWeight FLOAT NOT NULL,
+	Temperature FLOAT NULL,
+	Comment NVARCHAR(MAX) NULL,
+);
+
+
+INSERT INTO Register (Id, ArrivalDate, VehicleNumber, ItemOver, Crop, Reproduction, PhysicalWeight, WeedMoisture, Humidity, IsProduction, BaseWeedMoisture, BaseHumidity, Shrinkage, WeedLoss, AccountWeight, RegisterNumber, FinalPhysicalWeight, FinalShrinkage, FinalWeedLoss, FinalAccountWeight, Temperature, Comment)
+SELECT Id, ArrivalDate, VehicleNumber, ItemOver, Crop, Reproduction, PhysicalWeight, WeedMoisture, Humidity, IsProduction, BaseWeedMoisture, BaseHumidity, Shrinkage, WeedLoss, AccountWeight, 100, 21.2, 21.3,21.4, 21.5, Temperature, Comment
+FROM IPB;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'Stock')
+    DROP TABLE Stock;
+
+CREATE TABLE Stock
+(
+      Id INT PRIMARY KEY,
+	  TotalFinalAccountWeight INT NOT NULL,
+	  TotalFinalWeedLoss INT NOT NULL,
+
+);
+
+INSERT INTO Stock (Id, TotalFinalAccountWeight, TotalFinalWeedLoss) VALUES (1, 1500, 100);
+ 
+ IF EXISTS (SELECT * FROM sys.tables WHERE name = 'Accounting')
+    DROP TABLE Accounting;
+
+CREATE TABLE Accounting
+(
+    OperationName NVARCHAR(MAX),
+	NumberOfFinishedProducts FLOAT,
+	Price FLOAT,
+
+);
+INSERT INTO Accounting (OperationName, NumberOfFinishedProducts, Price)
+VALUES ('Production1', 500, 10.5),
+       ('Production2', 800, 8.2); 
