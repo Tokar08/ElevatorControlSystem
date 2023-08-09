@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "rCgODWn6WwW9tqPRdUREPp8rVuutkI2OISc0GxTmvi1+9piD6u18fJHrmXI58ovVLlbePBTuSU0FiOzHjeWlsg==",
+  "dgSpecHash": "tKIbjoHAGhgz5Skjog4U6ozY5aC9CnGJDGskIrZvkREfXgcjDMfGuYt7TKMoSyk9WbvcV7pAjY13dwP0ImydRg==",
   "success": true,
-  "projectFilePath": "D:\\step\\repos\\HW\\C#\\GrainElevatorCS_(fixLoad)\\GrainElevatorCS\\GrainElevatorCS.csproj",
+  "projectFilePath": "C:\\Users\\Master\\Documents\\GitHub\\ElevatorControlSystem\\Grain_Elevator_CS_default\\GrainElevatorCS\\GrainElevatorCS.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }
