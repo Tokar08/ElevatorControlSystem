@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\step\\repos\\HW\\C#\\GrainElevatorCS_(fixLoad)\\GrainElevatorCS\\GrainElevatorCS.csproj": {}
+    "C:\\Users\\Master\\Documents\\GitHub\\ElevatorControlSystem\\Grain_Elevator_CS_default\\GrainElevatorCS\\GrainElevatorCS.csproj": {}
   },
   "projects": {
-    "D:\\step\\repos\\HW\\C#\\GrainElevatorCS_(fixLoad)\\GrainElevatorCS\\GrainElevatorCS.csproj": {
+    "C:\\Users\\Master\\Documents\\GitHub\\ElevatorControlSystem\\Grain_Elevator_CS_default\\GrainElevatorCS\\GrainElevatorCS.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\step\\repos\\HW\\C#\\GrainElevatorCS_(fixLoad)\\GrainElevatorCS\\GrainElevatorCS.csproj",
+        "projectUniqueName": "C:\\Users\\Master\\Documents\\GitHub\\ElevatorControlSystem\\Grain_Elevator_CS_default\\GrainElevatorCS\\GrainElevatorCS.csproj",
         "projectName": "GrainElevatorCS",
-        "projectPath": "D:\\step\\repos\\HW\\C#\\GrainElevatorCS_(fixLoad)\\GrainElevatorCS\\GrainElevatorCS.csproj",
+        "projectPath": "C:\\Users\\Master\\Documents\\GitHub\\ElevatorControlSystem\\Grain_Elevator_CS_default\\GrainElevatorCS\\GrainElevatorCS.csproj",
         "packagesPath": "C:\\Users\\Master\\.nuget\\packages\\",
-        "outputPath": "D:\\step\\repos\\HW\\C#\\GrainElevatorCS_(fixLoad)\\GrainElevatorCS\\obj\\",
+        "outputPath": "C:\\Users\\Master\\Documents\\GitHub\\ElevatorControlSystem\\Grain_Elevator_CS_default\\GrainElevatorCS\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Master\\AppData\\Roaming\\NuGet\\NuGet.Config",
