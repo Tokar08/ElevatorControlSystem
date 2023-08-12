@@ -1,15 +1,18 @@
-﻿using System;
+﻿using Microsoft.Data.SqlClient;
+using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace GrainElevatorCS
 {
-    public class Price
+    public class Price : ISaveToDb
     {
         public string ProductTitle { get; set; }
         public Dictionary<string, double>? OperationPrices { get; set; } // коллекция цен на технологические операции
+        public string? CreatedBy { get; set; } = string.Empty; // имя пользователя-создателя
 
         public Price(string productTitle)
         {
@@ -88,10 +91,43 @@ namespace GrainElevatorCS
             }                 
         }
 
+        public async Task SaveAllInfo(string connString, string databaseName, string tableName, params object[] objects)
+        {
+            string query = @"INSERT INTO" + $"{tableName}" + "(productTitle, operationPrices, createdBy)" +
+                                          "VALUES (@productTitle, @operationPrices, @createdBy)";
+
+            using SqlConnection conn = new SqlConnection(connString);
+
+            try
+            {
+                await conn.OpenAsync();
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+
+                SqlParameter productTitleParam = new SqlParameter("@productTitle", SqlDbType.VarChar, 20)
+                {
+                    Value = objects[0]
+                };
+                cmd.Parameters.Add(productTitleParam);
+
+                cmd.Parameters.AddWithValue("@operationPrices", objects[1]);
+                cmd.Parameters.AddWithValue("@createdBy", objects[2]);
+
+                cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR: {ex.Message}");  //  TODO
+            }
+            finally
+            {
+                if (conn.State == ConnectionState.Open)
+                    conn.Close();
+            }
+        }
 
 
-
-        // тест на КОНСОЛЬ
+        // тест на КОНСОЛЬ ===============================================================================
         public void PrintPrice()
         {
             if(OperationPrices == null)

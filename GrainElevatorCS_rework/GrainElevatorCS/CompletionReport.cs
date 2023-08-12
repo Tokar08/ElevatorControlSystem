@@ -1,6 +1,8 @@
-﻿using Microsoft.Win32;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -9,19 +11,21 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GrainElevatorCS
 {
-    public class CompletionReport
+    public class CompletionReport : ISaveToDb
     {
         public int ReportNumber { get; set; } = 0; // номер Реестра
-        public DateTime Date { get; set; } = DateTime.Now; // дата прихода 
+        public DateTime Date { get; set; } = DateTime.Now; // дата создания
         public string Supplier { get; set; } = string.Empty; // наименование предприятия Поставщика
         public string ProductTitle { get; set; } = string.Empty; // наименование Продукции
 
         public List<TechnologicalOperation>? Operations { get; set; } // коллекция технологических операций
-
+        
         private double quantityesDrying = 0; // кол-во тонно/процентов сушки всех ППП всех Реестров Акта
         private double physicalWeightReport = 0; // общий физический вес Акта доработки
 
-        public CompletionReport(int reportNum, DateTime date, params Register[] registers)
+        public string? CreatedBy { get; set; } = string.Empty; // имя пользователя-создателя
+
+        public CompletionReport(int reportNum, DateTime date, List<Register> registers)
         {
             if (registers != null)
             {
@@ -131,7 +135,7 @@ namespace GrainElevatorCS
 
 
         // рассчет общего Сумми Физического веса всех Реестров
-        private double CalcSumWeightReport(params Register[] registers)
+        private double CalcSumWeightReport(List<Register> registers)
         {
             try
             {
@@ -148,7 +152,7 @@ namespace GrainElevatorCS
         }
 
         // расчет тонно/процентов сушки по каждой ППП всех Реестров Акта
-        private double CalcDryingQuantity(params Register[] registers) 
+        private double CalcDryingQuantity(List<Register> registers) 
         {
             if (registers == null)
                 return 0.0;
@@ -175,6 +179,49 @@ namespace GrainElevatorCS
             }
         }
 
+        public async Task SaveAllInfo(string connString, string databaseName, string tableName, params object[] objects)
+        {
+            string query = @"INSERT INTO" + $"{tableName}" + "(reportNumber, date, supplier, productTitle, operations, quantityesDrying, physicalWeightReport, createdBy)" +
+                                          "VALUES (@reportNumber, @date, @supplier, @productTitle, @operations, @quantityesDrying, @physicalWeightReport, @createdBy)";
+
+            using SqlConnection conn = new SqlConnection(connString);
+
+            try
+            {
+                await conn.OpenAsync();
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+
+                SqlParameter reportNumberParam = new SqlParameter("@reportNumber", SqlDbType.Int)
+                {
+                    Value = objects[0]
+                };
+                cmd.Parameters.Add(reportNumberParam);
+
+                SqlParameter dateParam = new SqlParameter("@date", SqlDbType.Date)
+                {
+                    Value = objects[1]
+                };
+
+                cmd.Parameters.AddWithValue("@supplier", objects[2]);
+                cmd.Parameters.AddWithValue("@productTitle", objects[3]);
+                cmd.Parameters.AddWithValue("@operations", objects[4]);
+                cmd.Parameters.AddWithValue("@quantityesDrying", objects[5]);
+                cmd.Parameters.AddWithValue("@physicalWeightReport", objects[6]);
+                cmd.Parameters.AddWithValue("@createdBy", objects[7]);
+
+                cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR: {ex.Message}");  //  TODO
+            }
+            finally
+            {
+                if (conn.State == ConnectionState.Open)
+                    conn.Close();
+            }
+        }
 
 
 
@@ -183,8 +230,7 @@ namespace GrainElevatorCS
 
 
 
-
-        // вивод Акта на КОНСОЛЬ
+        // вивод Акта на КОНСОЛЬ =================================================================================================================
         public void PrintReport()
         {
             Console.WriteLine($"Акт доработки     №{ReportNumber}");

@@ -1,7 +1,9 @@
-﻿using Microsoft.Win32;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -14,7 +16,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GrainElevatorCS
 {
-    public class DepotItem
+    public class DepotItem : ISaveToDb
     {
         public string Supplier { get; set; } = string.Empty; // наименование предприятия Поставщика
         public string ProductTitle { get; set; } = string.Empty; // наименование Продукции
@@ -22,6 +24,17 @@ namespace GrainElevatorCS
         public Dictionary<string, int>? Сategories { get; set; } // коллекция категорий хранимой продукции
 
         public DepotItem() { }
+
+        public DepotItem(Register register)
+        {
+            Supplier = register.Supplier;
+            ProductTitle = register.ProductTitle;
+            Сategories = new Dictionary<string, int>
+            {
+                { "Кондиционная продукция", register.AccWeightsReg },
+                { "Отход", register.WastesReg }
+            };
+        }
 
         public DepotItem(params Register[] registers)
         {
@@ -56,12 +69,40 @@ namespace GrainElevatorCS
             }
         }
 
+        public async Task SaveAllInfo(string connString, string databaseName, string tableName, params object[] objects)
+        {
+            string query = @"INSERT INTO" + $"{tableName}" + "(supplier, productTitle, categories)" +
+                                          "VALUES (@supplier, @productTitle, @categories)";
+
+            using SqlConnection conn = new SqlConnection(connString);
+
+            try
+            {
+                await conn.OpenAsync();
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+
+                cmd.Parameters.AddWithValue("@supplier", objects[0]);
+                cmd.Parameters.AddWithValue("@productTitle", objects[1]);
+                cmd.Parameters.AddWithValue("@categories", objects[2]);
+
+                cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR: {ex.Message}");  //  TODO
+            }
+            finally
+            {
+                if (conn.State == ConnectionState.Open)
+                    conn.Close();
+            }
+        }
 
 
 
 
-
-        // вивод на КОНСОЛЬ
+        // вивод на КОНСОЛЬ =================================================================================
         public void PrintDepotItem()
         {
             Console.WriteLine(
