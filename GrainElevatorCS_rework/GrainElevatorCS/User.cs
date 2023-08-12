@@ -36,76 +36,73 @@ namespace GrainElevatorCS
         }
 
 
-
-
         public async Task SaveAllInfo(string connString, string databaseName, string tableName, params object[] objects)
         {
+            string query = @"INSERT INTO" + $"{tableName}" + "(firstName, lastName, birthDate, email, phone, city, country)" +
+                                            "VALUES (@firstName, @lastName, @birthDate, @email, @phone, @city, @country)";
+
+            using SqlConnection conn = new SqlConnection(connString);
+
+            try
             {
-                string query = @"INSERT INTO" + $"{tableName}" + "(firstName, lastName, birthDate, email, phone, city, country)" +
-                                              "VALUES (@firstName, @lastName, @birthDate, @email, @phone, @city, @country)";
+                await conn.OpenAsync();
 
-                using SqlConnection conn = new SqlConnection(connString);
+                SqlCommand cmd = new SqlCommand(query, conn);
 
-                try
+                SqlParameter firstNameParam = new SqlParameter("@firstName", SqlDbType.VarChar, 30)
                 {
-                    await conn.OpenAsync();
+                    Value = objects[0]
+                };
+                cmd.Parameters.Add(firstNameParam);
 
-                    SqlCommand cmd = new SqlCommand(query, conn);
-
-                    SqlParameter firstNameParam = new SqlParameter("@firstName", SqlDbType.VarChar, 30)
-                    {
-                        Value = objects[0]
-                    };
-                    cmd.Parameters.Add(firstNameParam);
-
-                    SqlParameter lastNameParam = new SqlParameter("@lastName", SqlDbType.VarChar, 30)
-                    {
-                        Value = objects[1]
-                    };
-                    cmd.Parameters.Add(lastNameParam);
-
-                    SqlParameter birthDateParam = new SqlParameter("@birthDate", SqlDbType.VarChar, 8)
-                    {
-                        Value = objects[2]
-                    };
-                    cmd.Parameters.Add(birthDateParam);
-
-                    SqlParameter emailParam = new SqlParameter("@email", SqlDbType.VarChar, 30)
-                    {
-                        Value = objects[3]
-                    };
-                    cmd.Parameters.Add(emailParam);
-
-                    SqlParameter phoneParam = new SqlParameter("@phone", SqlDbType.VarChar, 13)
-                    {
-                        Value = objects[4]
-                    };
-                    cmd.Parameters.Add(phoneParam);
-
-                    SqlParameter cityParam = new SqlParameter("@city", SqlDbType.VarChar, 30)
-                    {
-                        Value = objects[5]
-                    };
-                    cmd.Parameters.Add(cityParam);
-
-                    SqlParameter countryParam = new SqlParameter("@country", SqlDbType.VarChar, 30)
-                    {
-                        Value = objects[6]
-                    };
-                    cmd.Parameters.Add(countryParam);
-
-                    cmd.ExecuteNonQuery();
-                }
-                catch (Exception ex)
+                SqlParameter lastNameParam = new SqlParameter("@lastName", SqlDbType.VarChar, 30)
                 {
-                    Console.WriteLine($"ERROR: {ex.Message}");
-                }
-                finally
+                    Value = objects[1]
+                };
+                cmd.Parameters.Add(lastNameParam);
+
+                SqlParameter birthDateParam = new SqlParameter("@birthDate", SqlDbType.Date, 3)
                 {
-                    if (conn.State == ConnectionState.Open)
-                        conn.Close();
-                }
+                    Value = objects[2]
+                };
+                cmd.Parameters.Add(birthDateParam);
+
+                SqlParameter emailParam = new SqlParameter("@email", SqlDbType.VarChar, 30)
+                {
+                    Value = objects[3]
+                };
+                cmd.Parameters.Add(emailParam);
+
+                SqlParameter phoneParam = new SqlParameter("@phone", SqlDbType.VarChar, 13)
+                {
+                    Value = objects[4]
+                };
+                cmd.Parameters.Add(phoneParam);
+
+                SqlParameter cityParam = new SqlParameter("@city", SqlDbType.VarChar, 30)
+                {
+                    Value = objects[5]
+                };
+                cmd.Parameters.Add(cityParam);
+
+                SqlParameter countryParam = new SqlParameter("@country", SqlDbType.VarChar, 30)
+                {
+                    Value = objects[6]
+                };
+                cmd.Parameters.Add(countryParam);
+
+                cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR: {ex.Message}");  //  TODO
+            }
+            finally
+            {
+                if (conn.State == ConnectionState.Open)
+                    conn.Close();
             }
         }
     }
 }
+

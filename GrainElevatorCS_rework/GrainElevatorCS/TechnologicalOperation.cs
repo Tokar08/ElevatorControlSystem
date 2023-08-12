@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GrainElevatorCS
 {
-    public class TechnologicalOperation
+    public class TechnologicalOperation 
     {
         public string Title { get; set; }  // Наименование Технологической операции 
         public double Amount { get; set; } = 0;  // Количество Продукции (тонн) обработанних на данной Техн. операции

@@ -364,11 +364,14 @@ namespace GrainElevatorCS
             Console.WriteLine("Создание Акта доработки c расчетом стоимости работ по Прайсу\n");
             Console.ReadLine();
 
-            CompletionReport cr1 = new CompletionReport(101, DateTime.Now, registerDB[0]);
+
+            List<Register> list = new List<Register>() { registerDB[0] };
+            CompletionReport cr1 = new CompletionReport(101, DateTime.Now, list);
             cr1.CalcByPrice(price1);
             complReportDB.Add(cr1);
 
-            CompletionReport cr2 = new CompletionReport(102, DateTime.Now, registerDB[3]);
+            list = new List<Register>() { registerDB[3] };
+            CompletionReport cr2 = new CompletionReport(102, DateTime.Now, list);
             cr2.CalcByPrice(price2);
             complReportDB.Add(cr2);
 

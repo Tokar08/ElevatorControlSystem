@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Microsoft.Data.SqlClient;
+using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
@@ -17,10 +19,10 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GrainElevatorCS
 {
-    public class ProductionBatch
+    public class ProductionBatch : ISaveToDb
     {
         // входящие данные (из LabCard)
-        public DateTime Date { get; set; } = new DateTime(0001, 01, 01); // дата прихода 
+        public DateTime Date { get; set; } = DateTime.Now; // дата прихода 
         public int LabCardNumber { get; set; } = 0; // номер Карточки анализа
         public string InvNumber { get; set; } = string.Empty; // номер входящей накладной
         public string Supplier { get; set; } = string.Empty; // наименование предприятия Поставщика
@@ -98,6 +100,58 @@ namespace GrainElevatorCS
                 Shrinkage = (int)((PhysicalWeight - Waste) * (1 - (100 - Moisture) / (100 - MoistureBase)));
 
             AccWeight = PhysicalWeight - Waste - Shrinkage;
+        }
+
+        public async Task SaveAllInfo(string connString, string databaseName, string tableName, params object[] objects)
+        {
+            string query = @"INSERT INTO" + $"{tableName}" + "(labCardNumber, invNumber, date, supplier, productTitle, physicalWeight, weediness, moisture, weedinessBase, moistureBase, waste, shrinkage, accWeight)" +
+                                          "VALUES (@labCardNumber, @invNumber, @date, @supplier, @productTitle, @physicalWeight, @weediness, @moisture, @weedinessBase, @moistureBase, @waste, @shrinkage, @accWeight)";
+
+            using SqlConnection conn = new SqlConnection(connString);
+
+            try
+            {
+                await conn.OpenAsync();
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+
+                cmd.Parameters.AddWithValue("@labCardNumber", objects[0]);
+                cmd.Parameters.AddWithValue("@invNumber", objects[1]);
+                cmd.Parameters.AddWithValue("@date", objects[2]);
+                cmd.Parameters.AddWithValue("@supplier", objects[3]);
+                cmd.Parameters.AddWithValue("@productTitle", objects[4]);
+                cmd.Parameters.AddWithValue("@physicalWeight", objects[5]);
+                cmd.Parameters.AddWithValue("@weediness", objects[6]);
+                cmd.Parameters.AddWithValue("@moisture", objects[7]);
+
+                SqlParameter weedinessBaseParam = new SqlParameter("@weedinessBase", SqlDbType.Float)
+                {
+                    Value = objects[8]
+                };
+                cmd.Parameters.Add(weedinessBaseParam);
+
+                SqlParameter moistureBaseParam = new SqlParameter("@moistureBase", SqlDbType.Float)
+                {
+                    Value = objects[9]
+                };
+                cmd.Parameters.Add(moistureBaseParam);
+
+                cmd.Parameters.AddWithValue("@waste", objects[10]);
+                cmd.Parameters.AddWithValue("@shrinkage", objects[11]);
+                cmd.Parameters.AddWithValue("@accWeight", objects[12]);
+
+
+                cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR: {ex.Message}");  //  TODO
+            }
+            finally
+            {
+                if (conn.State == ConnectionState.Open)
+                    conn.Close();
+            }
         }
 
 
