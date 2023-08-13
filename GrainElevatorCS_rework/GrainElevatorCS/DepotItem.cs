@@ -1,58 +1,122 @@
-﻿using System;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 //Складская учетная единица.
 //==========================
-//Содержит информацию о всех Реестрах одного Наименования
-//Суммарные количественные показатели Наименования: Зачетный вес, Отход, Усушка.
+//Суммарные количественные показатели категорий Наименования продукции: Зачетный вес, Отход.
 
 namespace GrainElevatorCS
 {
-    public class DepotItem
+    public class DepotItem : ISaveToDb
     {
-        //[JsonIgnore]
-        public List<Register>? registers;
-        public string? Title { get; set; } = null;
-        public int AccWeightItem { get; set; }  //общий Зачетный вес(AccWeight) 
-        public int WasteItem { get; set; }      //общий Отход(Waste)			
-        public int ShrinkageItem { get; set; }	//общая Усушка(Shrinkage)		
+        public string Supplier { get; set; } = string.Empty; // наименование предприятия Поставщика
+        public string ProductTitle { get; set; } = string.Empty; // наименование Продукции
 
-        public DepotItem(){}
+        public Dictionary<string, int>? Сategories { get; set; } // коллекция категорий хранимой продукции
+
+        public DepotItem() { }
 
         public DepotItem(Register register)
         {
-            registers = new List<Register>() { register };
-
-            Title = register.ProductTitle;
-            AccWeightItem += register.AccWeightsReg;
-            WasteItem += register.WastesReg;
-            ShrinkageItem += register.ShrinkagesReg;
+            Supplier = register.Supplier;
+            ProductTitle = register.ProductTitle;
+            Сategories = new Dictionary<string, int>
+            {
+                { "Кондиционная продукция", register.AccWeightsReg },
+                { "Отход", register.WastesReg }
+            };
         }
 
-        public DepotItem(string? title, int accWeightItem, int wasteItem, int shrinkageItem)
+        public DepotItem(params Register[] registers)
         {
-            registers = new List<Register>();
-            Title = title;
-            AccWeightItem = accWeightItem;
-            WasteItem = wasteItem;
-            ShrinkageItem = shrinkageItem;
+            Supplier = registers[0].Supplier;
+            ProductTitle = registers[0].ProductTitle;
+            Сategories = new Dictionary<string, int>();
 
+            foreach (Register r in registers)
+            {
+                if (Supplier == r.Supplier && ProductTitle == r.ProductTitle)
+                {
+                    Сategories.Add("Кондиционная продукция", r.AccWeightsReg);
+                    Сategories.Add("Отход", r.WastesReg);
+                }
+            } 
         }
 
         public void AddRegister(Register register)
         {
-            if (registers != null)
+            if(Supplier == register.Supplier && ProductTitle == register.ProductTitle)
             {
-                registers.Add(register);
+                int weight = 0;
+                Сategories?.Remove("Кондиционная продукция", out weight);
+                Сategories?.Add("Кондиционная продукция", weight + register.AccWeightsReg);
 
-                AccWeightItem += register.AccWeightsReg;
-                WasteItem += register.WastesReg;
-                ShrinkageItem += register.ShrinkagesReg;
+                Сategories?.Remove("Отход", out weight);
+                Сategories?.Add("Отход", weight + register.WastesReg);
+            }
+            else
+            {
+                DepotItem di = new DepotItem(register);
             }
         }
+
+        public async Task SaveAllInfo(string connString, string databaseName, string tableName, params object[] objects)
+        {
+            string query = @"INSERT INTO" + $"{tableName}" + "(supplier, productTitle, categories)" +
+                                          "VALUES (@supplier, @productTitle, @categories)";
+
+            using SqlConnection conn = new SqlConnection(connString);
+
+            try
+            {
+                await conn.OpenAsync();
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+
+                cmd.Parameters.AddWithValue("@supplier", objects[0]);
+                cmd.Parameters.AddWithValue("@productTitle", objects[1]);
+                cmd.Parameters.AddWithValue("@categories", objects[2]);
+
+                cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR: {ex.Message}");  //  TODO
+            }
+            finally
+            {
+                if (conn.State == ConnectionState.Open)
+                    conn.Close();
+            }
+        }
+
+
+
+
+        // вивод на КОНСОЛЬ =================================================================================
+        public void PrintDepotItem()
+        {
+            Console.WriteLine(
+                   $"Поставщик:                 {Supplier}\n" +
+                   $"Наименование:              {ProductTitle}");
+
+            if(Сategories != null)
+                foreach (var c in Сategories)
+                    Console.WriteLine($"{c.Key}:      {c.Value}");
+
+            Console.WriteLine();
+        }
+
+
+
     }
 }
