@@ -23,6 +23,7 @@ namespace GrainElevatorCS
         private double quantityesDrying = 0; // кол-во тонно/процентов сушки всех ППП всех Реестров Акта
         private double physicalWeightReport = 0; // общий физический вес Акта доработки
 
+        public bool IsFinalized { get; set; } = false; // завершен бухгалтерией
         public string? CreatedBy { get; set; } = string.Empty; // имя пользователя-создателя
 
         public CompletionReport(int reportNum, DateTime date, List<Register> registers)
@@ -97,6 +98,8 @@ namespace GrainElevatorCS
                             op.TotalCost = op.Amount * op.Price;
                         }
                 });
+
+                IsFinalized = true;
             }
             catch (Exception)
             {
@@ -181,8 +184,8 @@ namespace GrainElevatorCS
 
         public async Task SaveAllInfo(string connString, string databaseName, string tableName, params object[] objects)
         {
-            string query = @"INSERT INTO" + $"{tableName}" + "(reportNumber, date, supplier, productTitle, operations, quantityesDrying, physicalWeightReport, createdBy)" +
-                                          "VALUES (@reportNumber, @date, @supplier, @productTitle, @operations, @quantityesDrying, @physicalWeightReport, @createdBy)";
+            string query = @"INSERT INTO" + $"{tableName}" + "(reportNumber, date, supplier, productTitle, operations, quantityesDrying, physicalWeightReport, isFinalized, createdBy)" +
+                                          "VALUES (@reportNumber, @date, @supplier, @productTitle, @operations, @quantityesDrying, @physicalWeightReport, @isFinalized, @createdBy)";
 
             using SqlConnection conn = new SqlConnection(connString);
 
@@ -208,7 +211,8 @@ namespace GrainElevatorCS
                 cmd.Parameters.AddWithValue("@operations", objects[4]);
                 cmd.Parameters.AddWithValue("@quantityesDrying", objects[5]);
                 cmd.Parameters.AddWithValue("@physicalWeightReport", objects[6]);
-                cmd.Parameters.AddWithValue("@createdBy", objects[7]);
+                cmd.Parameters.AddWithValue("@isFinalized", objects[7]);
+                cmd.Parameters.AddWithValue("@createdBy", objects[8]);
 
                 cmd.ExecuteNonQuery();
             }

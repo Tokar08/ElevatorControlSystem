@@ -23,7 +23,10 @@ namespace GrainElevatorCS
 
         public Dictionary<string, int>? Сategories { get; set; } // коллекция категорий хранимой продукции
 
-        public DepotItem() { }
+        public DepotItem()
+        {
+            Сategories = new Dictionary<string, int>();
+        }
 
         public DepotItem(Register register)
         {
@@ -52,6 +55,23 @@ namespace GrainElevatorCS
             } 
         }
 
+        public void AddCategory(string categoryTitle)
+        {
+            try
+            {
+                if (Сategories!.ContainsKey(categoryTitle))
+                    return;
+
+                Сategories.Add($"{categoryTitle}", 0);
+            }
+            catch (Exception)
+            {
+                // TODO
+                throw;
+            }
+
+        }
+
         public void AddRegister(Register register)
         {
             if(Supplier == register.Supplier && ProductTitle == register.ProductTitle)
@@ -68,6 +88,7 @@ namespace GrainElevatorCS
                 DepotItem di = new DepotItem(register);
             }
         }
+
 
         public async Task SaveAllInfo(string connString, string databaseName, string tableName, params object[] objects)
         {
@@ -98,6 +119,10 @@ namespace GrainElevatorCS
                     conn.Close();
             }
         }
+
+
+
+
 
 
 
