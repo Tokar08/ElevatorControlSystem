@@ -1,0 +1,48 @@
+USE master
+
+IF EXISTS (SELECT * FROM sys.databases WHERE name = 'GrainElevatorDB') 
+BEGIN 
+    ALTER DATABASE GrainElevatorDB SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE GrainElevatorDB;
+END
+
+CREATE DATABASE GrainElevatorDB;
+USE GrainElevatorDB;
+
+-- Create a table Users
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'UsersDB')
+    DROP TABLE UsersDB;
+
+CREATE TABLE UsersDB (
+    id INT PRIMARY KEY,
+    first_name NVARCHAR(50),
+    last_name NVARCHAR(50),
+    birth_of_date INT,
+    email NVARCHAR(100),
+    password NVARCHAR(8),
+    phone NVARCHAR(20),
+    city NVARCHAR(50),
+    country NVARCHAR(50),
+	role NVARCHAR(50),
+);
+
+-- Пример вставки данных в таблицу UsersDB
+INSERT INTO UsersDB (id, first_name, last_name, birth_of_date, email, password, phone, city, country, role)
+VALUES
+    (1, 'Vasia', 'Petrov', 19850115, 'vasia@gmail.com', 'zxc', '1234567890', 'Lviv', 'Ukraine', 'Director'),
+    (2, 'Petya', 'Ivanov', 19901010, 'petya@gmail.com', 'cxz', '9876543210', 'Lviv', 'Ukraine', 'Production'),
+    (3, 'Olga', 'Sidorova', 19880808, 'olga@gmail.com', 'ewq', '5551234567', 'Kiev', 'Ukraine', 'Laboratory'),
+    (4, 'Anna', 'Kuznetsova', 19951125, 'anna@gmail.com', 'asd', '9998887777', 'Kiev', 'Belarus', 'Accounting'),
+    (5, 'Alex', 'Smirnov', 19801005, 'alex@gmail.com', 'dsa', '1112223333', 'Lviv', 'Ukraine', 'HR'),
+    (6, 'Ivan', 'Fedorov', 19930218, 'Ivan@gmail.com', 'qwe', '4445556666', 'Kiev', 'Ukraine', 'Dev');
+
+
+---=ПРИМЕРЫ=---
+
+--Это пример как мы будем скрывать пароль от HR при просмотре всех пользователей
+SELECT id, first_name, last_name, birth_of_date, email, REPLICATE('*', LEN(password)) AS password, phone, city, country, role
+FROM UsersDB;
+
+--Это обычный вывод информации о пользователях
+SELECT * 
+FROM UsersDB;
