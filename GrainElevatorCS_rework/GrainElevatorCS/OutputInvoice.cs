@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -13,11 +14,11 @@ namespace GrainElevatorCS
     // ===============================
     // Содержит информацию об отгружаемой продукции продукции.
 
-    public class OutputInvoice : ISaveToDb
+    public class OutputInvoice// : ISaveToDb
     {
         public string OutInvNumber { get; set; } = string.Empty; // номер накладной
         public DateTime Date { get; set; } = DateTime.Now;  // дата отгрузки
-        public string VenicleNumber { get; set; } = string.Empty; // гос.номер транспортного средства
+        public string VehicleNumber { get; set; } = string.Empty; // гос.номер транспортного средства
         public string Supplier { get; set; } = string.Empty; // наименование предприятия Поставщика
         public string ProductTitle { get; set; } = string.Empty; // наименование Продукции
         public string Category { get; set; } = string.Empty; // Категория Продукции
@@ -31,76 +32,78 @@ namespace GrainElevatorCS
         {
             OutInvNumber = outInvNumber;
             Date = date;
-            VenicleNumber = venicleNumber;
+            VehicleNumber = venicleNumber;
             Supplier = supplier;
             ProductTitle = productTitle;
             Category = category;
             Weight = productWeight;
         }
 
-        public OutputInvoice(string outInvNumber, DateTime date, string venicleNumber, DepotItem depotItem, string category, int productWeight)
+        public OutputInvoice(string outInvNumber, DateTime date, string vehicleNumber, DepotItem depotItem, string category, int productWeight)
         {
             OutInvNumber = outInvNumber;
             Date = date;
-            VenicleNumber = venicleNumber;
+            VehicleNumber = vehicleNumber;
             Supplier = depotItem.Supplier;
             ProductTitle = depotItem.ProductTitle;
             Category = category;
             Weight = productWeight;
         }
 
-        public async Task SaveAllInfo(string connString, string databaseName, string tableName, params object[] objects)
+        public async Task SaveAllInfo(string connString, string databaseName, params string[] tableNames)
         {
-            string query = @"INSERT INTO" + $"{tableName}" + "(outInvNumber, date, venicleNumber, supplier, productTitle, category, productWeight, createdBy)" +
-                                          "VALUES (@outInvNumber, @date, @venicleNumber , @supplier, @productTitle, @category, @productWeight, @createdBy)";
+            string query = @"INSERT INTO " + $"{tableNames[0]}" + "(outInvNumber, shipmentDate, vehicleNumber, supplier, productTitle, category, productWeight, createdBy)" +
+                                         "VALUES (@outInvNumber, @shipmentDate, @vehicleNumber , @supplier, @productTitle, @category, @productWeight, @createdBy)";
 
             using SqlConnection conn = new SqlConnection(connString);
-
             try
             {
-                await conn.OpenAsync();
+                conn.Open();
 
                 SqlCommand cmd = new SqlCommand(query, conn);
 
                 SqlParameter outInvNumberParam = new SqlParameter("@outInvNumber", SqlDbType.VarChar, 10)
                 {
-                    Value = objects[0]
+                    Value = OutInvNumber
                 };
                 cmd.Parameters.Add(outInvNumberParam);
 
-                SqlParameter dateParam = new SqlParameter("@date", SqlDbType.Date)
+                SqlParameter dateParam = new SqlParameter("@shipmentDate", SqlDbType.Date)
                 {
-                    Value = objects[1]
+                    Value = Date
                 };
+                cmd.Parameters.Add(dateParam);
 
-                SqlParameter venicleNumberParam = new SqlParameter("@venicleNumber", SqlDbType.VarChar, 10)
+                SqlParameter venicleNumberParam = new SqlParameter("@vehicleNumber", SqlDbType.VarChar, 10)
                 {
-                    Value = objects[2]
+                    Value = VehicleNumber
                 };
                 cmd.Parameters.Add(venicleNumberParam);
 
-                cmd.Parameters.AddWithValue("@supplier", objects[3]);
-                cmd.Parameters.AddWithValue("@productTitle", objects[4]);
+                cmd.Parameters.AddWithValue("@supplier", Supplier);
+                cmd.Parameters.AddWithValue("@productTitle", ProductTitle);
 
                 SqlParameter categoryParam = new SqlParameter("@category", SqlDbType.VarChar, 30)
                 {
-                    Value = objects[5]
+                    Value = Category
                 };
                 cmd.Parameters.Add(categoryParam);
 
                 SqlParameter productWeightParam = new SqlParameter("@productWeight", SqlDbType.Int)
                 {
-                    Value = objects[6]
+                    Value = Weight
                 };
                 cmd.Parameters.Add(productWeightParam);
 
-                cmd.Parameters.AddWithValue("@createdBy", objects[7]);
+                cmd.Parameters.AddWithValue("@createdBy", CreatedBy);
 
                 cmd.ExecuteNonQuery();
+            
+
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ERROR: {ex.Message}");  //  TODO
+                Console.WriteLine($"ERROR: {ex.Message}");  //  TODO MessageBox
             }
             finally
             {
@@ -108,9 +111,6 @@ namespace GrainElevatorCS
                     conn.Close();
             }
         }
-
-
-
 
 
         // ввод информации (ДЛЯ ТЕСТА НА КОНСОЛИ) =====================================================================
@@ -129,7 +129,7 @@ namespace GrainElevatorCS
                     outInv.OutInvNumber = Console.ReadLine();
 
                     Console.Write("Регистрационний номер транспортного средства:        ");
-                    outInv.VenicleNumber = Console.ReadLine();
+                    outInv.VehicleNumber = Console.ReadLine();
 
                     Console.Write("Поставщик Продукции:                                 ");
                     outInv.Supplier = Console.ReadLine();
@@ -158,7 +158,7 @@ namespace GrainElevatorCS
             return $"\nРасходная накладная №{OutInvNumber}.\n" +
                    $"---------------------------\n" +
                    $"Дата отгрузки:             {Date.ToString("dd.MM.yyyy")}\n" +
-                   $"Номер ТС:                  {VenicleNumber}\n"+
+                   $"Номер ТС:                  {VehicleNumber}\n"+
                    $"Поставщик:                 {Supplier}\n" +
                    $"Наименование продукции:    {ProductTitle}\n" +
                    $"Категория продукции:       {Category}\n" +
