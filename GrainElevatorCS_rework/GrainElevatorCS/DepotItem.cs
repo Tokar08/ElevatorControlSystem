@@ -16,7 +16,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GrainElevatorCS
 {
-    public class DepotItem : ISaveToDb
+    public class DepotItem// : ISaveToDb
     {
         public string Supplier { get; set; } = string.Empty; // наименование предприятия Поставщика
         public string ProductTitle { get; set; } = string.Empty; // наименование Продукции
@@ -90,24 +90,17 @@ namespace GrainElevatorCS
         }
 
 
-        public async Task SaveAllInfo(string connString, string databaseName, string tableName, params object[] objects)
+        // вставка данних в две связанние таблици (Depotitem содержит словарь Категорий продукции)
+        public async Task SaveAllInfo(string connString, string databaseName, params string[] tableNames)
         {
-            string query = @"INSERT INTO" + $"{tableName}" + "(supplier, productTitle, categories)" +
-                                          "VALUES (@supplier, @productTitle, @categories)";
-
             using SqlConnection conn = new SqlConnection(connString);
 
             try
             {
-                await conn.OpenAsync();
+                conn.Open();
 
-                SqlCommand cmd = new SqlCommand(query, conn);
-
-                cmd.Parameters.AddWithValue("@supplier", objects[0]);
-                cmd.Parameters.AddWithValue("@productTitle", objects[1]);
-                cmd.Parameters.AddWithValue("@categories", objects[2]);
-
-                cmd.ExecuteNonQuery();
+                int lastInsertedFirstTable_id = Convert.ToInt32(insertInFirstTable(conn, tableNames[0]));
+                insertInSecondTable(conn, tableNames[1], lastInsertedFirstTable_id);
             }
             catch (Exception ex)
             {
@@ -120,11 +113,41 @@ namespace GrainElevatorCS
             }
         }
 
+        private object insertInFirstTable(SqlConnection conn, string tableName)
+        {
+            // добавление данних в первую таблицу - сompletionReports
+            string query = @"INSERT INTO " + $"{tableName}" + " (supplier, productTitle)" +
+                                          "VALUES (@supplier, @productTitle);" +
+                            "SELECT scope_identity();";
 
+            SqlCommand cmd = new SqlCommand(query, conn);
 
+            cmd.Parameters.AddWithValue("@supplier", Supplier);
+            cmd.Parameters.AddWithValue("@productTitle", ProductTitle);
 
+            return cmd.ExecuteScalar();
+        }
 
+        private void insertInSecondTable(SqlConnection conn, string tableName, int lastInsertedFirstTable_id)
+        {
+            // добавление данних во вторую таблицу - technologicalOperations (из первого запроса получаем id вставленного Акта доработки и вставляем его во вторую таблицу)
+            if (Сategories is null)
+                return;
 
+            foreach (var cat in Сategories)
+            {
+                string query = @"INSERT INTO " + $"{tableName}" + "(depotItem_id, categoryTitle, categoryValue)" +
+                                          "VALUES (@depotItem_id, @categoryTitle, @categoryValue)";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+
+                cmd.Parameters.AddWithValue("@depotItem_id", lastInsertedFirstTable_id);
+                cmd.Parameters.AddWithValue("@categoryTitle", cat.Key);
+                cmd.Parameters.AddWithValue("@categoryValue", cat.Value);
+
+                cmd.ExecuteNonQuery();
+            }
+        }
 
 
         // вивод на КОНСОЛЬ =================================================================================

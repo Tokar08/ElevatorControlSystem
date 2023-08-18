@@ -8,6 +8,7 @@ namespace GrainElevatorCS
 {
     public class TechnologicalOperation 
     {
+        private int completionReport_id = 0;
         public string Title { get; set; }  // Наименование Технологической операции 
         public double Amount { get; set; } = 0;  // Количество Продукции (тонн) обработанних на данной Техн. операции
         public double Price { get; set; } = 0; // Стоимость обработки 1 т Продукции на данной Технологической операции

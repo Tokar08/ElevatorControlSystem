@@ -11,7 +11,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GrainElevatorCS
 {
-    public class User : ISaveToDb
+    public class User// : ISaveToDb
     {
         public string FirstName { get; set; } = string.Empty; 
         public string LastName { get; set; } = string.Empty;
