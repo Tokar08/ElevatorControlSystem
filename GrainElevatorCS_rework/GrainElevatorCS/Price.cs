@@ -3,21 +3,23 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GrainElevatorCS
 {
-    public class Price : ISaveToDb
+    public class Price// : ISaveToDb
     {
         public string ProductTitle { get; set; }
-        public Dictionary<string, double>? OperationPrices { get; set; } // коллекция цен на технологические операции
+        public Dictionary<string, double>? PriceByOperations { get; set; } // коллекция цен на технологические операции
         public string? CreatedBy { get; set; } = string.Empty; // имя пользователя-создателя
 
         public Price(string productTitle)
         {
             ProductTitle = productTitle;
-            OperationPrices = new Dictionary<string, double>();
+            PriceByOperations = new Dictionary<string, double>();
 
             //OperationPrices = new Dictionary<string, double>()
             //    {
@@ -32,7 +34,7 @@ namespace GrainElevatorCS
         {
             try
             {
-                OperationPrices?.Add(operationTitle, operationPrice);
+                PriceByOperations?.Add(operationTitle, operationPrice);
             }
             catch (Exception)
             {
@@ -46,7 +48,7 @@ namespace GrainElevatorCS
             try
             {
                 foreach (KeyValuePair<string, double> op in operatoinPrices)
-                    OperationPrices?.Add(op.Key, op.Value);
+                    PriceByOperations?.Add(op.Key, op.Value);
             }
             catch (Exception)
             {
@@ -55,14 +57,11 @@ namespace GrainElevatorCS
             }
         }
 
-
-
-
         public void RemoveOperation(string operationTitle)
         {
             try
             {
-                OperationPrices?.Remove(operationTitle);
+                PriceByOperations?.Remove(operationTitle);
             }
             catch (Exception)
             {
@@ -73,15 +72,15 @@ namespace GrainElevatorCS
 
         public void ChangePriceValues(string operationTitle, double operationPrice)
         {
-            if (OperationPrices == null)
+            if (PriceByOperations == null)
                     return;
 
             try
             {
-                if (OperationPrices.ContainsKey(operationTitle))
+                if (PriceByOperations.ContainsKey(operationTitle))
                 {
-                    OperationPrices.Remove(operationTitle);
-                    OperationPrices.Add(operationTitle, operationPrice);
+                    PriceByOperations.Remove(operationTitle);
+                    PriceByOperations.Add(operationTitle, operationPrice);
                 }
             }
             catch (Exception)
@@ -91,29 +90,20 @@ namespace GrainElevatorCS
             }                 
         }
 
-        public async Task SaveAllInfo(string connString, string databaseName, string tableName, params object[] objects)
+        
+        
+    
+        // вставка данних в две связанние таблици (Прайс содержит словарь Цен на Технологических операции)
+        public async Task SaveAllInfo(string connString, string databaseName, params string[] tableNames)
         {
-            string query = @"INSERT INTO" + $"{tableName}" + "(productTitle, operationPrices, createdBy)" +
-                                          "VALUES (@productTitle, @operationPrices, @createdBy)";
-
             using SqlConnection conn = new SqlConnection(connString);
 
             try
             {
-                await conn.OpenAsync();
+                conn.Open();
 
-                SqlCommand cmd = new SqlCommand(query, conn);
-
-                SqlParameter productTitleParam = new SqlParameter("@productTitle", SqlDbType.VarChar, 20)
-                {
-                    Value = objects[0]
-                };
-                cmd.Parameters.Add(productTitleParam);
-
-                cmd.Parameters.AddWithValue("@operationPrices", objects[1]);
-                cmd.Parameters.AddWithValue("@createdBy", objects[2]);
-
-                cmd.ExecuteNonQuery();
+                int lastInsertedFirstTable_id = Convert.ToInt32(insertInFirstTable(conn, tableNames[0]));
+                insertInSecondTable(conn, tableNames[1], lastInsertedFirstTable_id);
             }
             catch (Exception ex)
             {
@@ -127,10 +117,52 @@ namespace GrainElevatorCS
         }
 
 
+        private object insertInFirstTable(SqlConnection conn, string tableName)
+        {
+            // добавление данних в первую таблицу - сompletionReports
+            string query = @"INSERT INTO " + $"{tableName}" + "(productTitle, createdBy)" +
+                                           "VALUES (@productTitle, @createdBy);" +
+                            "SELECT scope_identity();";
+
+            SqlCommand cmd = new SqlCommand(query, conn);
+
+            SqlParameter productTitleParam = new SqlParameter("@productTitle", SqlDbType.VarChar, 20)
+            {
+                Value = ProductTitle
+            };
+            cmd.Parameters.Add(productTitleParam);
+
+            cmd.Parameters.AddWithValue("@createdBy", CreatedBy);
+
+            return cmd.ExecuteScalar();
+        }
+
+        private void insertInSecondTable(SqlConnection conn, string tableName, int lastInsertedFirstTable_id)
+        {
+            // добавление данних во вторую таблицу - technologicalOperations (из первого запроса получаем id вставленного Акта доработки и вставляем его во вторую таблицу)
+            if (PriceByOperations is null)
+                return;
+
+            foreach (var op in PriceByOperations)
+            {
+                string query = @"INSERT INTO " + $"{tableName}" + "(price_id, operationTitle, operationPrice)" +
+                                          "VALUES (@price_id, @operationTitle, @operationPrice)";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+
+                cmd.Parameters.AddWithValue("@price_id", lastInsertedFirstTable_id);
+                cmd.Parameters.AddWithValue("@operationTitle", op.Key);
+                cmd.Parameters.AddWithValue("@operationPrice", op.Value);
+                
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+
         // тест на КОНСОЛЬ ===============================================================================
         public void PrintPrice()
         {
-            if(OperationPrices == null)
+            if(PriceByOperations == null)
             {
                 Console.WriteLine("Прайс не сформирован.");
                 return;
@@ -138,7 +170,7 @@ namespace GrainElevatorCS
 
             Console.WriteLine($"Наименование:    {ProductTitle}");
 
-            foreach (var op in OperationPrices) 
+            foreach (var op in PriceByOperations) 
                 Console.WriteLine($"{op.Key} || {string.Format("{0:F2}", op.Value)} грн.");
 
             Console.WriteLine("\n");

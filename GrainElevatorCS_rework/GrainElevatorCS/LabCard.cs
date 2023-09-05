@@ -33,13 +33,13 @@ namespace GrainElevatorCS
         public bool IsProduction { get; set; } = false; // напрвляется ли в Производство
 
         // необязательние поля
-        public string? GrainImpurity { get; set; } = string.Empty; // зерновая/масличная примесь
+        public double? GrainImpurity { get; set; } = 0; // зерновая/масличная примесь
         public string? SpecialNotes { get; set; } = string.Empty; // особие отметки
         public string? CreatedBy { get; set; } = string.Empty; // имя пользователя-создателя
 
 
         public LabCard() { }
-        public LabCard(int labCardNumber, string invNumber, DateTime date, string supplier, string productTitle, int physicalWeight, double weediness, double moisture, string grainImpurity = "", string specialNotes = "")
+        public LabCard(int labCardNumber, string invNumber, DateTime date, string supplier, string productTitle, int physicalWeight, double weediness, double moisture, double grainImpurity = 0, string specialNotes = "")
         {
             LabCardNumber = labCardNumber;
             InvNumber = invNumber;
@@ -53,7 +53,7 @@ namespace GrainElevatorCS
             SpecialNotes = specialNotes;
         }
 
-        public LabCard(InputInvoice inv, int labCardNumber, double weediness, double moisture, string grainImpurity = "", string specialNotes = "") 
+        public LabCard(InputInvoice inv, int labCardNumber, double weediness, double moisture, double grainImpurity = 0, string specialNotes = "") 
         {
             Date = inv.Date;
             InvNumber = inv.InvNumber;
@@ -68,10 +68,10 @@ namespace GrainElevatorCS
             SpecialNotes = specialNotes;
         }
 
-        public async Task SaveAllInfo(string connString, string databaseName, string tableName, params object[] objects)
+        public async Task SaveAllInfo(string connString, string databaseName, params string[] tableNames)
         {
-            string query = @"INSERT INTO" + $"{tableName}" + "(labCardNumber, invNumber, date, venicleNumber, supplier, productTitle, physicalWeight, weediness, moisture, grainImpurity, specialNotes, isProduction, createdBy)" +
-                                          "VALUES (@labCardNumber, @invNumber, @date, @venicleNumber, @supplier, @productTitle, @physicalWeight, @weediness, @moisture, @grainImpurity, @specialNotes, @isProduction, @createdBy)";
+            string query = @"INSERT INTO " + $"{tableNames[0]}" + "(labCardNumber, invNumber, arrivalDate, supplier, productTitle, physicalWeight, weediness, moisture, grainImpurity, specialNotes, isProduction, createdBy)" +
+                                          "VALUES (@labCardNumber, @invNumber, @arrivalDate, @supplier, @productTitle, @physicalWeight, @weediness, @moisture, @grainImpurity, @specialNotes, @isProduction, @createdBy)";
 
             using SqlConnection conn = new SqlConnection(connString);
 
@@ -83,77 +83,71 @@ namespace GrainElevatorCS
 
                 SqlParameter labCardNumberParam = new SqlParameter("@labCardNumber", SqlDbType.Int)
                 {
-                    Value = objects[0]
+                    Value = LabCardNumber
                 };
                 cmd.Parameters.Add(labCardNumberParam);
 
                 SqlParameter invNumberParam = new SqlParameter("@invNumber", SqlDbType.VarChar, 10)
                 {
-                    Value = objects[1]
+                    Value = InvNumber
                 };
                 cmd.Parameters.Add(invNumberParam);
 
-                SqlParameter dateParam = new SqlParameter("@date", SqlDbType.Date)
+                SqlParameter dateParam = new SqlParameter("@arrivalDate", SqlDbType.Date)
                 {
-                    Value = objects[2]
+                    Value = Date
                 };
                 cmd.Parameters.Add(dateParam);
 
-                SqlParameter venicleNumberParam = new SqlParameter("@venicleNumber", SqlDbType.VarChar, 12)
-                {
-                    Value = objects[3]
-                };
-                cmd.Parameters.Add(venicleNumberParam);
-
                 SqlParameter supplierParam = new SqlParameter("@supplier", SqlDbType.VarChar, 50)
                 {
-                    Value = objects[4]
+                    Value = Supplier
                 };
                 cmd.Parameters.Add(supplierParam);
 
                 SqlParameter productTitleParam = new SqlParameter("@productTitle", SqlDbType.VarChar, 30)
                 {
-                    Value = objects[5]
+                    Value = ProductTitle
                 };
                 cmd.Parameters.Add(productTitleParam);
 
                 SqlParameter physicalWeightParam = new SqlParameter("@physicalWeight", SqlDbType.Int)
                 {
-                    Value = objects[6]
+                    Value = PhysicalWeight
                 };
                 cmd.Parameters.Add(physicalWeightParam);
 
                 SqlParameter weedinessParam = new SqlParameter("@weediness", SqlDbType.Float)
                 {
-                    Value = objects[7]
+                    Value = Weediness
                 };
                 cmd.Parameters.Add(weedinessParam);
 
                 SqlParameter moistureParam = new SqlParameter("@moisture", SqlDbType.Float)
-                { 
-                    Value = objects[8]
+                {
+                    Value = Moisture
                 };
                 cmd.Parameters.Add(moistureParam);
 
                 SqlParameter grainImpurityParam = new SqlParameter("@grainImpurity", SqlDbType.Float)
                 {
-                    Value = objects[9]
+                    Value = GrainImpurity
                 };
                 cmd.Parameters.Add(grainImpurityParam);
 
                 SqlParameter specialNotesParam = new SqlParameter("@specialNotes", SqlDbType.VarChar, 50)
                 {
-                    Value = objects[10]
+                    Value = SpecialNotes
                 };
                 cmd.Parameters.Add(specialNotesParam);
 
                 SqlParameter isProductionParam = new SqlParameter("@isProduction", SqlDbType.Bit)
                 {
-                    Value = objects[11]
+                    Value = IsProduction
                 };
                 cmd.Parameters.Add(isProductionParam);
 
-                cmd.Parameters.AddWithValue("@createdBy", objects[12]);
+                cmd.Parameters.AddWithValue("@createdBy", CreatedBy);
 
                 cmd.ExecuteNonQuery();
             }
@@ -167,9 +161,6 @@ namespace GrainElevatorCS
                     conn.Close();
             }
         }
-
-
-
 
 
         // для теста на КОНСОЛИ===================================================================================================

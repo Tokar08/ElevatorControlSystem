@@ -19,8 +19,10 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GrainElevatorCS
 {
-    public class ProductionBatch : ISaveToDb
+    public class ProductionBatch// : ISaveToDb
     {
+        public int Register_id { get; set; } = 0; // id родительского реестра
+
         // входящие данные (из LabCard)
         public DateTime Date { get; set; } = DateTime.Now; // дата прихода 
         public int LabCardNumber { get; set; } = 0; // номер Карточки анализа
@@ -39,6 +41,7 @@ namespace GrainElevatorCS
         public int Waste { get; set; } = 0; // Сорная убыль (Отход)
         public int Shrinkage { get; set; } = 0; // Усушка
         public int AccWeight { get; set; } = 0;  // Зачетный вес 
+
 
 
 
@@ -102,10 +105,13 @@ namespace GrainElevatorCS
             AccWeight = PhysicalWeight - Waste - Shrinkage;
         }
 
-        public async Task SaveAllInfo(string connString, string databaseName, string tableName, params object[] objects)
+
+
+
+        public async Task SaveAllInfo(string connString, string databaseName, params string[] tableNames)
         {
-            string query = @"INSERT INTO" + $"{tableName}" + "(labCardNumber, invNumber, date, supplier, productTitle, physicalWeight, weediness, moisture, weedinessBase, moistureBase, waste, shrinkage, accWeight)" +
-                                          "VALUES (@labCardNumber, @invNumber, @date, @supplier, @productTitle, @physicalWeight, @weediness, @moisture, @weedinessBase, @moistureBase, @waste, @shrinkage, @accWeight)";
+            string query = @"INSERT INTO " + $"{tableNames[0]}" + "(labCardNumber, invNumber, arrivalDate, supplier, productTitle, physicalWeight, weediness, moisture, weedinessBase, moistureBase, waste, shrinkage, accountWeight)" +
+                                          "VALUES (@labCardNumber, @invNumber, @arrivalDate, @supplier, @productTitle, @physicalWeight, @weediness, @moisture, @weedinessBase, @moistureBase, @waste, @shrinkage, @accountWeight)";
 
             using SqlConnection conn = new SqlConnection(connString);
 
@@ -115,30 +121,30 @@ namespace GrainElevatorCS
 
                 SqlCommand cmd = new SqlCommand(query, conn);
 
-                cmd.Parameters.AddWithValue("@labCardNumber", objects[0]);
-                cmd.Parameters.AddWithValue("@invNumber", objects[1]);
-                cmd.Parameters.AddWithValue("@date", objects[2]);
-                cmd.Parameters.AddWithValue("@supplier", objects[3]);
-                cmd.Parameters.AddWithValue("@productTitle", objects[4]);
-                cmd.Parameters.AddWithValue("@physicalWeight", objects[5]);
-                cmd.Parameters.AddWithValue("@weediness", objects[6]);
-                cmd.Parameters.AddWithValue("@moisture", objects[7]);
+                cmd.Parameters.AddWithValue("@labCardNumber", LabCardNumber);
+                cmd.Parameters.AddWithValue("@invNumber", InvNumber);
+                cmd.Parameters.AddWithValue("@arrivalDate", Date);
+                cmd.Parameters.AddWithValue("@supplier", Supplier);
+                cmd.Parameters.AddWithValue("@productTitle", ProductTitle);
+                cmd.Parameters.AddWithValue("@physicalWeight", PhysicalWeight);
+                cmd.Parameters.AddWithValue("@weediness", Weediness);
+                cmd.Parameters.AddWithValue("@moisture", Moisture);
 
                 SqlParameter weedinessBaseParam = new SqlParameter("@weedinessBase", SqlDbType.Float)
                 {
-                    Value = objects[8]
+                    Value = WeedinessBase
                 };
                 cmd.Parameters.Add(weedinessBaseParam);
 
                 SqlParameter moistureBaseParam = new SqlParameter("@moistureBase", SqlDbType.Float)
                 {
-                    Value = objects[9]
+                    Value = MoistureBase
                 };
                 cmd.Parameters.Add(moistureBaseParam);
 
-                cmd.Parameters.AddWithValue("@waste", objects[10]);
-                cmd.Parameters.AddWithValue("@shrinkage", objects[11]);
-                cmd.Parameters.AddWithValue("@accWeight", objects[12]);
+                cmd.Parameters.AddWithValue("@waste", Waste);
+                cmd.Parameters.AddWithValue("@shrinkage", Shrinkage);
+                cmd.Parameters.AddWithValue("@accountWeight", AccWeight);
 
 
                 cmd.ExecuteNonQuery();
@@ -154,12 +160,7 @@ namespace GrainElevatorCS
             }
         }
 
-
-
-
-
-
-
+        
 
 
         // запрос базових значений качества (ДЛЯ ТЕСТА НА КОНСОЛИ)

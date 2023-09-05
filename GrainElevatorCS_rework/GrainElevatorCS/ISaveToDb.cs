@@ -8,7 +8,8 @@ namespace GrainElevatorCS
 {
     public interface ISaveToDb
     {
-        Task SaveAllInfo(string connString, string databaseName, string tableName, params object[] objects);
+        //Task SaveAllInfo(string connString, string databaseName, string tableName, params object[] objects);
+        Task SaveAllInfo(string connString, string databaseName, params string[] tableNames);
 
     }
 }

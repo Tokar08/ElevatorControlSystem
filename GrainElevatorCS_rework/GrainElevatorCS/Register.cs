@@ -22,24 +22,49 @@ namespace GrainElevatorCS
         public string Supplier { get; set; } = string.Empty; // наименование предприятия Поставщика
         public string ProductTitle { get; set; } = string.Empty; // наименование Продукции
 
-        public List<ProductionBatch>? prodBatches; // коллекция ППП Реестра
+        public List<ProductionBatch>? ProuctionBatches { get; set; } // коллекция ППП Реестра
 
         public int PhysicalWeightReg { get; set; } = 0; // суммарний Физический вес Реестра
         public int AccWeightsReg { get; set; } = 0; // суммарний Зачетный вес Реестра
         public int WastesReg { get; set; } = 0; // суммарная Сорная убыль Реестра
         public int ShrinkagesReg { get; set; } = 0; // суммарная Усушка Реестра
-        public string? CreatedBy { get; set; } // имя пользователя-создателя
+        public string? CreatedBy { get; set; } = string.Empty; // имя пользователя-создателя
+
 
         public Register()
         {
-            prodBatches = new List<ProductionBatch>();
-        }    
+            ProuctionBatches = new List<ProductionBatch>();
+        }
+
+        public Register(int regNum, List<LabCard>? labCards, double weedinessBase, double moistureBase)
+        {
+            if (labCards != null)
+            {
+                ProuctionBatches = new List<ProductionBatch>();
+
+                RegNumber = regNum;
+                Date = labCards[0].Date;
+                Supplier = labCards[0].Supplier;
+                ProductTitle = labCards[0].ProductTitle;
+
+                foreach (var lc in labCards)
+                {
+                    ProductionBatch pb = new ProductionBatch(lc, weedinessBase, moistureBase);
+                    ProuctionBatches.Add( pb );
+
+                    PhysicalWeightReg += pb.PhysicalWeight;
+                    AccWeightsReg += pb.AccWeight;
+                    WastesReg += pb.Waste;
+                    ShrinkagesReg += pb.Shrinkage;
+                }
+            }
+        }
 
         public Register(int regNum, List<ProductionBatch>? prodBatches)
         {
             if (prodBatches != null)
             {
-                this.prodBatches = new List<ProductionBatch>(prodBatches);
+                ProuctionBatches = new List<ProductionBatch>(prodBatches);
 
                 RegNumber = regNum;
                 Date = prodBatches[0].Date;
@@ -60,7 +85,7 @@ namespace GrainElevatorCS
         {
             if (prodBatches != null)
             {
-                this.prodBatches = new List<ProductionBatch>(prodBatches);
+                ProuctionBatches = new List<ProductionBatch>(prodBatches);
 
                 RegNumber = regNum;
                 Date = prodBatches[0].Date;
@@ -77,7 +102,6 @@ namespace GrainElevatorCS
             }
         }
 
-
         public void AddToRegister(ProductionBatch pb)
         {
             if (pb != null)
@@ -85,7 +109,7 @@ namespace GrainElevatorCS
                 Date = pb.Date;
                 ProductTitle = pb.ProductTitle;
                 Supplier = pb.Supplier;
-                prodBatches?.Add(pb);
+                ProuctionBatches?.Add(pb);
 
                 PhysicalWeightReg += pb.PhysicalWeight;
                 AccWeightsReg += pb.AccWeight;
@@ -94,36 +118,20 @@ namespace GrainElevatorCS
             }
         }
 
-        public async Task SaveAllInfo(string connString, string databaseName, string tableName, params object[] objects)
-        {
-            string query = @"INSERT INTO" + $"{tableName}" + "(regNumber, date, supplier, productTitle, prodBatches, physicalWeightReg, accWeightReg, wasteReg, shrinkageReg, createdBy)" +
-                                          "VALUES (@regNumber, @date, @supplier, @productTitle, @prodBatches, @physicalWeightReg, @weediness, @moisture, @weedinessBase, @moistureBase, @waste, @shrinkage, @accWeight, @createdBy)";
 
+
+
+        // вставка данних в две связанние таблици (Акт доработки содержит список Технологических операций)
+        public async Task SaveAllInfo(string connString, string databaseName, params string[] tableNames)
+        {
             using SqlConnection conn = new SqlConnection(connString);
 
             try
             {
-                await conn.OpenAsync();
+                conn.Open();
 
-                SqlCommand cmd = new SqlCommand(query, conn);
-
-                SqlParameter regNumberParam = new SqlParameter("@regNumber", SqlDbType.Int)
-                {
-                    Value = objects[0]
-                };
-                cmd.Parameters.Add(regNumberParam);
-
-                cmd.Parameters.AddWithValue("@date", objects[1]);
-                cmd.Parameters.AddWithValue("@supplier", objects[2]);
-                cmd.Parameters.AddWithValue("@productTitle", objects[3]);
-                cmd.Parameters.AddWithValue("@prodBatches", objects[4]);
-                cmd.Parameters.AddWithValue("@physicalWeightReg", objects[5]);
-                cmd.Parameters.AddWithValue("@accWeightReg", objects[6]);
-                cmd.Parameters.AddWithValue("@wasteReg", objects[7]);
-                cmd.Parameters.AddWithValue("@shrinkageReg", objects[8]);
-                cmd.Parameters.AddWithValue("@createdBy", objects[9]);
-
-                cmd.ExecuteNonQuery();
+                int lastInsertedFirstTable_id = Convert.ToInt32(insertInFirstTable(conn, tableNames[0]));
+                insertInSecondTable(conn, tableNames[1], lastInsertedFirstTable_id);
             }
             catch (Exception ex)
             {
@@ -135,6 +143,127 @@ namespace GrainElevatorCS
                     conn.Close();
             }
         }
+
+
+        private object insertInFirstTable(SqlConnection conn, string tableName)
+        {
+            // добавление данних в первую таблицу - сompletionReports
+            string query = @"INSERT INTO " + $"{tableName}" + "(registerNumber, arrivalDate, supplier, productTitle, physicalWeightReg, accWeightReg, wasteReg, shrinkageReg, createdBy)" +
+                                "VALUES (@registerNumber, @arrivalDate, @supplier, @productTitle, @physicalWeightReg, @accWeightReg, @wasteReg, @shrinkageReg, @createdBy); " +
+                                "SELECT scope_identity();";
+
+            SqlCommand cmd = new SqlCommand(query, conn);
+
+            SqlParameter regNumberParam = new SqlParameter("@registerNumber", SqlDbType.Int)
+            {
+                Value = RegNumber
+            };
+            cmd.Parameters.Add(regNumberParam);
+
+            cmd.Parameters.AddWithValue("@arrivalDate", Date);
+            cmd.Parameters.AddWithValue("@supplier", Supplier);
+            cmd.Parameters.AddWithValue("@productTitle", ProductTitle);
+            cmd.Parameters.AddWithValue("@physicalWeightReg", PhysicalWeightReg);
+            cmd.Parameters.AddWithValue("@accWeightReg", AccWeightsReg);
+            cmd.Parameters.AddWithValue("@wasteReg", WastesReg);
+            cmd.Parameters.AddWithValue("@shrinkageReg", ShrinkagesReg);
+            cmd.Parameters.AddWithValue("@createdBy", CreatedBy);
+
+            return cmd.ExecuteScalar();
+        }
+
+        private void insertInSecondTable(SqlConnection conn, string tableName, int lastInsertedFirstTable_id)
+        {
+            // добавление данних во вторую таблицу - technologicalOperations (из первого запроса получаем id вставленного Акта доработки и вставляем его во вторую таблицу)
+            if (ProuctionBatches is null)
+                return;
+
+            foreach (var pb in ProuctionBatches)
+            {
+                string query = @"INSERT INTO " + $"{tableName}" + "(register_id, labCardNumber, invNumber, arrivalDate, supplier, productTitle, physicalWeight, weediness, moisture, weedinessBase, moistureBase, waste, shrinkage, accountWeight)" +
+                                          "VALUES (@register_id, @labCardNumber, @invNumber, @arrivalDate, @supplier, @productTitle, @physicalWeight, @weediness, @moisture, @weedinessBase, @moistureBase, @waste, @shrinkage, @accountWeight)";
+
+                SqlCommand cmd = new SqlCommand(query, conn);
+
+                cmd.Parameters.AddWithValue("@register_id", lastInsertedFirstTable_id);
+                cmd.Parameters.AddWithValue("@labCardNumber", pb.LabCardNumber);
+                cmd.Parameters.AddWithValue("@invNumber", pb.InvNumber);
+                cmd.Parameters.AddWithValue("@arrivalDate", pb.Date);
+                cmd.Parameters.AddWithValue("@supplier", Supplier);
+                cmd.Parameters.AddWithValue("@productTitle", ProductTitle);
+                cmd.Parameters.AddWithValue("@physicalWeight", pb.PhysicalWeight);
+                cmd.Parameters.AddWithValue("@weediness", pb.Weediness);
+                cmd.Parameters.AddWithValue("@moisture", pb.Moisture);
+
+                SqlParameter weedinessBaseParam = new SqlParameter("@weedinessBase", SqlDbType.Float)
+                {
+                    Value = pb.WeedinessBase
+                };
+                cmd.Parameters.Add(weedinessBaseParam);
+
+                SqlParameter moistureBaseParam = new SqlParameter("@moistureBase", SqlDbType.Float)
+                {
+                    Value = pb.MoistureBase
+                };
+                cmd.Parameters.Add(moistureBaseParam);
+
+                cmd.Parameters.AddWithValue("@waste", pb.Waste);
+                cmd.Parameters.AddWithValue("@shrinkage", pb.Shrinkage);
+                cmd.Parameters.AddWithValue("@accountWeight", pb.AccWeight);
+
+                cmd.ExecuteNonQuery();            
+            }
+        }
+
+
+
+
+
+
+
+
+
+        //public async Task SaveAllInfo(string connString, string databaseName, string tableName, params object[] objects)
+        //{
+        //    string query = @"INSERT INTO" + $"{tableName}" + "(regNumber, date, supplier, productTitle, prodBatches, physicalWeightReg, accWeightReg, wasteReg, shrinkageReg, createdBy)" +
+        //                                  "VALUES (@regNumber, @date, @supplier, @productTitle, @prodBatches, @physicalWeightReg, @weediness, @moisture, @weedinessBase, @moistureBase, @waste, @shrinkage, @accWeight, @createdBy)";
+
+        //    using SqlConnection conn = new SqlConnection(connString);
+
+        //    try
+        //    {
+        //        await conn.OpenAsync();
+
+        //        SqlCommand cmd = new SqlCommand(query, conn);
+
+        //        SqlParameter regNumberParam = new SqlParameter("@regNumber", SqlDbType.Int)
+        //        {
+        //            Value = objects[0]
+        //        };
+        //        cmd.Parameters.Add(regNumberParam);
+
+        //        cmd.Parameters.AddWithValue("@date", objects[1]);
+        //        cmd.Parameters.AddWithValue("@supplier", objects[2]);
+        //        cmd.Parameters.AddWithValue("@productTitle", objects[3]);
+        //        cmd.Parameters.AddWithValue("@prodBatches", objects[4]);
+        //        cmd.Parameters.AddWithValue("@physicalWeightReg", objects[5]);
+        //        cmd.Parameters.AddWithValue("@accWeightReg", objects[6]);
+        //        cmd.Parameters.AddWithValue("@wasteReg", objects[7]);
+        //        cmd.Parameters.AddWithValue("@shrinkageReg", objects[8]);
+        //        cmd.Parameters.AddWithValue("@createdBy", objects[9]);
+
+        //        cmd.ExecuteNonQuery();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"ERROR: {ex.Message}");  //  TODO
+        //    }
+        //    finally
+        //    {
+        //        if (conn.State == ConnectionState.Open)
+        //            conn.Close();
+        //    }
+        //}
 
 
 
@@ -151,9 +280,9 @@ namespace GrainElevatorCS
             Console.WriteLine("|{0,8}|{1,10}|{2,15}|{3,10}|{4,10}|{5,10}|{6,10}|{7,15}|","Дата прихода","Номер ТТН", "Физический вес", "Влажность","Усушка","Сорность","Отход","Зачетный вес");
             Console.WriteLine(new string('=', 12 + 10 + 15 + 10 + 10 + 10 + 10 + 15 + 9));
 
-            if (prodBatches != null)
+            if (ProuctionBatches != null)
             {
-                foreach (var pb in prodBatches)
+                foreach (var pb in ProuctionBatches)
                     pb.PrintProductionBatch();
             }
 

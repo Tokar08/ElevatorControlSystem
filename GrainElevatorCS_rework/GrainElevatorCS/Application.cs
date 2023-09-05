@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,12 +9,13 @@ using System.Reflection.Emit;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace GrainElevatorCS
 {
     public class Application
     {
-        #region 2_Modify
+        #region 2_Modify_cod
 
         //public List<InputInvoice> inputInvDB = new List<InputInvoice>();
         //public List<LabCard> labCardDB = new List<LabCard>();
@@ -101,6 +103,7 @@ namespace GrainElevatorCS
         //            isAdded = true;
         //            return;
         //        }
+
         //    });
 
         //    if (!isAdded)
@@ -194,8 +197,8 @@ namespace GrainElevatorCS
 
 
 
-        #region CONSOLE_APP_TEST
-
+        #region TEST
+/*
         public List<InputInvoice> inputInvDB = new List<InputInvoice>();
         public List<LabCard> labCardDB = new List<LabCard>();
         public List<ProductionBatch> prodBatDB = new List<ProductionBatch>();
@@ -206,12 +209,14 @@ namespace GrainElevatorCS
         public List<CompletionReport> complReportDB = new List<CompletionReport>();
 
         public List<OutputInvoice> outInvDB = new List<OutputInvoice>();
+*/
+
 
         public void Execute()
         {
             FirstInit();
 
-            /*
+/*
             InputInvoice inInv;
             LabCard lc;
             ProductionBatch pb;
@@ -221,86 +226,84 @@ namespace GrainElevatorCS
             // создание Реестра
             reg = new();
 
-                        while (true)
-                        {
-                            Console.Clear();
+            while (true)
+            {
+                Console.Clear();
 
-                            //создание приходной накладной
-                            inInv = new();                           // сейчас в консоли: создание конструктором без параметров
-                            inInv = inInv.RequestInvoiceInfo(inInv); // сейчас в консоли: запрос пользовательской информации по приемке
+                //создание приходной накладной
+                inInv = new();                           // сейчас в консоли: создание конструктором без параметров
+                inInv = inInv.RequestInvoiceInfo(inInv); // сейчас в консоли: запрос пользовательской информации по приемке
 
-                            // будет в WPF: создание через конструктор с параметрами с извлечением информации из textBox окна Лаборатории
+                // будет в WPF: создание через конструктор с параметрами с извлечением информации из textBox окна Лаборатории
 
-                            // проверка соответствия дати и наименования продукции в Накладной текущему Реестру
-                            if (reg.prodBatches?.Count != 0 && (reg.ProductTitle != inInv.ProductTitle || reg.Date != inInv.Date))
-                            {
-                                Console.WriteLine($"\nДата поступления или Наименование входящей продукции не соответствуют данному Реестру.\n" +
-                                    $"Можете ввести их в соответствующий Реестр или создать новый Реестр после закрытия текущего.\n");
-                            }
+                // проверка соответствия дати и наименования продукции в Накладной текущему Реестру
+                if (reg.ProuctionBatches?.Count != 0 && (reg.ProductTitle != inInv.ProductTitle || reg.Date != inInv.Date))
+                {
+                    Console.WriteLine($"\nДата поступления или Наименование входящей продукции не соответствуют данному Реестру.\n" +
+                        $"Можете ввести их в соответствующий Реестр или создать новый Реестр после закрытия текущего.\n");
+                }
 
-                            // запуск Накладной в работу
-                            else
-                            {
-                                // создание приходной Накладной с добавлением в соответствующий list(DB)
-                                Console.Clear();
-                                Console.WriteLine($"\nСоздана и добавлена в базу данных\n{inInv}\n");
+                // запуск Накладной в работу
+                else
+                {
+                    // создание приходной Накладной с добавлением в соответствующий list(DB)
+                    Console.Clear();
+                    Console.WriteLine($"\nСоздана и добавлена в базу данных\n{inInv}\n");
 
-                                inputInvDB?.Add(inInv);
-
-
-                                //создание Карточки анализа на основе приходной Накладной с добавлением в соответствующий list(DB)
-
-                                lc = new(inInv, 37, 0, 0);  // будет в WPF: извлечение информации (сорность, влажность) из textBox окна Лаборатории
-
-                                lc = lc.RequestLabInfo(lc); // сейчас в консоли: запрос пользовательской информации по лабораторному анализу                                
-                                Console.Clear();
-                                Console.WriteLine($"\nСоздана и добавлена в базу данных\nЛабораторная карточка анализа:\n{lc}\n");
-
-                                labCardDB?.Add(lc);         // будет в WPF: добавление в список Карточек анализа
+                    inputInvDB?.Add(inInv);
 
 
+                    //создание Карточки анализа на основе приходной Накладной с добавлением в соответствующий list(DB)
+
+                    lc = new(inInv, 37, 0, 0);  // будет в WPF: извлечение информации (сорность, влажность) из textBox окна Лаборатории
+
+                    lc = lc.RequestLabInfo(lc); // сейчас в консоли: запрос пользовательской информации по лабораторному анализу                                
+                    Console.Clear();
+                    Console.WriteLine($"\nСоздана и добавлена в базу данных\nЛабораторная карточка анализа:\n{lc}\n");
+
+                    labCardDB?.Add(lc);         // будет в WPF: добавление в список Карточек анализа
 
 
-                                // создание Производственной Партии с добавлением в соответствующий list(DB)
-                                pb = new(lc, 0, 0);                 // будет в WPF: извлечение информации (сорность, влажность) из textBox окна Производство и рассчет в конструкторе
 
-                                pb = pb.RequestBaseQuilityInfo(pb); // сейчас в консоли: запрос пользовательской информации по базовим показателям качества для данного типа продукции
-                                pb.CalcResultProduction();          // сейчас в консоли: рассчет результатов доработки продукции
-                                reg.AddToRegister(pb);              // сейчас в консоли: добавление ППП в Реестр
 
-                                prodBatDB?.Add(pb);                 // будет в WPF: добавление в список ППП
+                    // создание Производственной Партии с добавлением в соответствующий list(DB)
+                    pb = new(lc, 0, 0);                 // будет в WPF: извлечение информации (сорность, влажность) из textBox окна Производство и рассчет в конструкторе
 
-                                // консоль
-                                Console.Clear();
-                                Console.WriteLine("\nПроизводственная партия сформирована и доработана до базовых показателей качества:\n\n");
-                                pb.PrintProductionBatch();
+                    pb = pb.RequestBaseQuilityInfo(pb); // сейчас в консоли: запрос пользовательской информации по базовим показателям качества для данного типа продукции
+                    pb.CalcResultProduction();          // сейчас в консоли: рассчет результатов доработки продукции
+                    reg.AddToRegister(pb);              // сейчас в консоли: добавление ППП в Реестр
 
-                                Console.WriteLine($"\nВходящие данные и результаты доработки внесены в Реестр" +
-                                                  $" Продукции:  {reg.ProductTitle}  за  {reg.Date}\n\n");
+                    prodBatDB?.Add(pb);                 // будет в WPF: добавление в список ППП
 
-                            }
+                    // консоль
+                    Console.Clear();
+                    Console.WriteLine("\nПроизводственная партия сформирована и доработана до базовых показателей качества:\n\n");
+                    pb.PrintProductionBatch();
 
-                            Console.WriteLine($"Для продолжения работы введите:\n" +
-                                              $"                                  0 - Продолжить внесение информации в Реестр по данной Дате и Наименованию.\n" +
-                                              $"                                  1 - Закрыть Реестр.\n");
+                    Console.WriteLine($"\nВходящие данные и результаты доработки внесены в Реестр" +
+                                      $" Продукции:  {reg.ProductTitle}  за  {reg.Date}\n\n");
 
-                            string? stop = Console.ReadLine();
-                            if (stop == "0")
-                                continue;
-                            else
-                            {
-                                Console.Clear();
-                                reg.PrintReg();
+                }
 
-                                registerDB.Add(reg);  // будет в WPF: добавление в список Реестров 
+                Console.WriteLine($"Для продолжения работы введите:\n" +
+                                  $"                                  0 - Продолжить внесение информации в Реестр по данной Дате и Наименованию.\n" +
+                                  $"                                  1 - Закрыть Реестр.\n");
 
-                                Console.WriteLine($"\nРеестр Продукции:{reg.ProductTitle} за {reg.Date.ToString("dd.MM.yyyy")} " + "добавлен на Склад.\n");
+                string? stop = Console.ReadLine();
+                if (stop == "0")
+                    continue;
+                else
+                {
+                    Console.Clear();
+                    reg.PrintReg();
 
-                                break;
-                            }
-                        }
+                    registerDB.Add(reg);  // будет в WPF: добавление в список Реестров 
 
-*/
+                    Console.WriteLine($"\nРеестр Продукции:{reg.ProductTitle} за {reg.Date.ToString("dd.MM.yyyy")} " + "добавлен на Склад.\n");
+
+                    break;
+                }
+            }
 
 
 
@@ -437,65 +440,159 @@ namespace GrainElevatorCS
                 if (!isAdded)
                     depotItemDB.Add(new DepotItem(reg));  // если не добавлен ни в один DepotItem, то создается новий
             };
+
+*/
         }
+
+            
 
         // первоначальное тестовое заполнение
         public void FirstInit()
         {
-            InputInvoice invoice1 = new("205365", DateTime.Today, "AA1111BH", "Хлебодар", "пшеница", 35570);
-            InputInvoice invoice2 = new("205365", DateTime.Today, "AА2222BH", "Хлебодар", "кукуруза", 30750);
-            InputInvoice invoice3 = new("205365", DateTime.Today, "AA3333BH", "Хлебодар", "ячмень", 27250);
-            InputInvoice invoice4 = new("205365", DateTime.Today, "АА4444ВН", "Хлебодар", "рапс", 28380);
-            InputInvoice invoice5 = new("205365", DateTime.Today, "AA5555BH", "Хлебодар", "пшеница", 25350);
-            InputInvoice invoice6 = new("205365", DateTime.Today, "AА6666BH", "Хлебодар", "кукуруза", 33570);
-            InputInvoice invoice7 = new("205365", DateTime.Today, "AA7777BH", "Хлебодар", "ячмень", 28750);
-            InputInvoice invoice8 = new("205365", DateTime.Today, "АА8888ВН", "Хлебодар", "рапс", 25250);
 
-            inputInvDB?.Add(invoice1);
-            inputInvDB?.Add(invoice2);
-            inputInvDB?.Add(invoice3);
-            inputInvDB?.Add(invoice4);
-            inputInvDB?.Add(invoice5);
-            inputInvDB?.Add(invoice6);
-            inputInvDB?.Add(invoice7);
-            inputInvDB?.Add(invoice8);
+            string dbName = "GrainElevatorDB";
+            string connString = @"Server =.\SQLEXPRESS; Database =" + $"{dbName}" + "; Trusted_Connection = True; Encrypt = False"; ;
+      
+            // создание Приходних накладних c сохранением в БД
+            string tableName = "inputInvoises";
+
+            InputInvoice invoice1 = new("АЕ205301", DateTime.Today, "AA1111BH", "Хлебодар", "пшеница", 35570);
+            invoice1?.SaveAllInfo(connString, dbName, tableName);
+
+            InputInvoice invoice2 = new("АЕ205302", DateTime.Today, "AА2222BH", "Хлебодар", "кукуруза", 30750);
+            invoice2?.SaveAllInfo(connString, dbName, tableName);
+
+            InputInvoice invoice3 = new("АЕ205303", DateTime.Today, "AA3333BH", "Хлебодар", "ячмень", 27250);
+            invoice3?.SaveAllInfo(connString, dbName, tableName);
+
+            InputInvoice invoice4 = new("АЕ205304", DateTime.Today, "АА4444ВН", "Хлебодар", "рапс", 28380);
+            invoice4?.SaveAllInfo(connString, dbName, tableName);
+
+            InputInvoice invoice5 = new("АЕ205305", DateTime.Today, "AA5555BH", "Хлебодар", "пшеница", 25350);
+            invoice5?.SaveAllInfo(connString, dbName, tableName);
+
+            InputInvoice invoice6 = new("АЕ205306", DateTime.Today, "AА6666BH", "Хлебодар", "кукуруза", 33570);
+            invoice6?.SaveAllInfo(connString, dbName, tableName);
+
+            InputInvoice invoice7 = new("АЕ205307", DateTime.Today, "AA7777BH", "Хлебодар", "ячмень", 28750);
+            invoice7?.SaveAllInfo(connString, dbName, tableName);
+
+            InputInvoice invoice8 = new("АЕ205308", DateTime.Today, "АА8888ВН", "Хлебодар", "рапс", 25250);
+            invoice8?.SaveAllInfo(connString, dbName, tableName);
+
+
+
+
+            // создание Карточек анализа c сохранением в БД
+            tableName = "laboratoryCards";
 
             LabCard labCard1 = new(invoice1, 1, 25.2, 15.9);
+            labCard1?.SaveAllInfo(connString, dbName, tableName);
+
             LabCard labCard2 = new(invoice2, 2, 20.2, 12.9);
+            labCard2?.SaveAllInfo(connString, dbName, tableName);
+
             LabCard labCard3 = new(invoice3, 3, 15.2, 10.9);
+            labCard3?.SaveAllInfo(connString, dbName, tableName);
+
             LabCard labCard4 = new(invoice4, 4, 17.9, 13.1);
+            labCard4?.SaveAllInfo(connString, dbName, tableName);
+
             LabCard labCard5 = new(invoice5, 5, 23.2, 13.9);
+            labCard5?.SaveAllInfo(connString, dbName, tableName);
+
             LabCard labCard6 = new(invoice6, 6, 18.2, 10.9);
+            labCard6?.SaveAllInfo(connString, dbName, tableName);
+
             LabCard labCard7 = new(invoice7, 7, 13.2, 8.9);
+            labCard7?.SaveAllInfo(connString, dbName, tableName);
+
             LabCard labCard8 = new(invoice8, 8, 15.9, 11.1);
+            labCard8?.SaveAllInfo(connString, dbName, tableName);
 
-            labCardDB.Add(labCard1);
-            labCardDB.Add(labCard2);
-            labCardDB.Add(labCard3);
-            labCardDB.Add(labCard4);
-            labCardDB.Add(labCard5);
-            labCardDB.Add(labCard6);
-            labCardDB.Add(labCard7);
-            labCardDB.Add(labCard8);
 
-            ProductionBatch pb1 = new(labCard1, 1, 13);
-            ProductionBatch pb2 = new(labCard2, 1, 14);
-            ProductionBatch pb3 = new(labCard3, 1, 13);
-            ProductionBatch pb4 = new(labCard4, 1, 8);
-            ProductionBatch pb5 = new(labCard5, 1, 13);
-            ProductionBatch pb6 = new(labCard6, 1, 14);
-            ProductionBatch pb7 = new(labCard7, 1, 13);
-            ProductionBatch pb8 = new(labCard8, 1, 8);
 
-            Register reg1 = new(1, pb1, pb5);
-            Register reg2 = new(2, pb2, pb6);
-            Register reg3 = new(3, pb3, pb7);
-            Register reg4 = new(4, pb4, pb8);
 
-            registerDB.Add(reg1);
-            registerDB.Add(reg2);
-            registerDB.Add(reg3);
-            registerDB.Add(reg4);
+            // создание Реестра на базе списков Карточек анализа c сохранением в БД
+            List<LabCard> labCardList1 = new() { labCard1, labCard5 };
+            List<LabCard> labCardList2 = new() { labCard2, labCard6 };
+            List<LabCard> labCardList3 = new() { labCard3, labCard7 };
+            List<LabCard> labCardList4 = new() { labCard4, labCard8 };
+
+
+            string tableName1 = "registers";
+            string tableName2 = "productionBatches";
+
+            Register reg1 = new Register(1, labCardList1, 1, 13);
+            reg1?.SaveAllInfo(connString, dbName, tableName1, tableName2);
+
+            Register reg2 = new Register(2, labCardList2, 1, 14);
+            reg2?.SaveAllInfo(connString, dbName, tableName1, tableName2);
+
+            Register reg3 = new Register(3, labCardList3, 1, 13);
+            reg3?.SaveAllInfo(connString, dbName, tableName1, tableName2);
+
+            Register reg4 = new Register(4, labCardList4, 1, 8);
+            reg4?.SaveAllInfo(connString, dbName, tableName1, tableName2);
+
+
+
+
+
+            // создание Складской единици c сохранением в БД
+            tableName1 = "depotItems";
+            tableName2 = "categories";
+
+            DepotItem di1 = new DepotItem(reg1);
+            di1?.SaveAllInfo(connString, dbName, tableName1, tableName2);
+
+            DepotItem di2 = new DepotItem(reg2);
+            di2?.SaveAllInfo(connString, dbName, tableName1, tableName2);
+
+            DepotItem di3 = new DepotItem(reg3);
+            di3?.SaveAllInfo(connString, dbName, tableName1, tableName2);
+
+            DepotItem di4 = new DepotItem(reg4);
+            di4?.SaveAllInfo(connString, dbName, tableName1, tableName2);
+
+
+
+
+
+            // создание Расходной накладной c сохранением в БД
+            tableName = "outputInvoices";
+
+            OutputInvoice outInv1 = new OutputInvoice("351", DateTime.Today, "AA1111BH", "Хлебодар", "пшеница", "отход", 3570);
+            outInv1?.SaveAllInfo(connString, dbName, tableName);
+
+            OutputInvoice outInv2 = new OutputInvoice("352", DateTime.Today, "AA2222BH", "Хлебодар", "кукуруза", "отход", 2530);
+            outInv2?.SaveAllInfo(connString, dbName, tableName);
+
+
+
+
+            // создание Прайса c сохранением в БД
+            tableName1 = "prices";
+            tableName2 = "priceByOperations";
+
+            Price price1 = new Price("пшеница");
+            price1.AddOperation("Приемка", 90.00);
+            price1.AddOperation("Первичная очистка", 780.00);
+            price1.AddOperation("Сушка в шахтной сушилке", 450.00);
+
+            price1?.SaveAllInfo(connString, dbName, tableName1, tableName2);
+
+           
+
+            // создание Акта доработки c сохранением в БД
+            tableName1 = "completionReports";
+            tableName2 = "technologicalOperations";
+
+            List<Register> registers = new List<Register>() { reg1, reg2, reg3, reg4 };
+
+            CompletionReport report = new CompletionReport(101, DateTime.Now , registers);
+            report?.SaveAllInfo(connString, dbName, tableName1, tableName2);
+
         }
 
         #endregion
