@@ -1,0 +1,134 @@
+﻿<Window x:Class="ElevatorControlSystem.ContactUsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ElevatorControlSystem"
+        mc:Ignorable="d"
+        Title="ContactUsWindow" Height="160" Width="370" AllowsTransparency="True"
+        WindowStyle="None" ResizeMode="CanMinimize"  WindowStartupLocation="CenterScreen">
+
+    <Window.Clip>
+        <RectangleGeometry Rect="0 0 370 160" RadiusX="25" RadiusY="25"/>
+    </Window.Clip>
+    <Window.Resources>
+        <Style x:Key="RoundedButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="border" CornerRadius="10" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="true">
+                            <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Resources>
+                            <SolidColorBrush x:Key="BlackBrush" Color="White"/>
+                        </ControlTemplate.Resources>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsDefaulted" Value="true">
+                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Background" TargetName="border" Value="Black"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="Black"/>
+                                <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="{StaticResource BlackBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter Property="Background" TargetName="border" Value="Black"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="Black"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Background" TargetName="border" Value="Black"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="Black"/>
+                                <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="#FFDDDDDD"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="RoundedButtonStyle2" TargetType="{x:Type Button}">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="border" CornerRadius="10" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="true">
+                            <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Resources>
+                            <SolidColorBrush x:Key="BlackBrush" Color="White"/>
+                        </ControlTemplate.Resources>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsDefaulted" Value="true">
+                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Background" TargetName="border" Value="White"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="White"/>
+                                <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="{StaticResource BlackBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter Property="Background" TargetName="border" Value="White"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Background" TargetName="border" Value="White"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="White"/>
+                                <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="#FFDDDDDD"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <ControlTemplate x:Key="RoundedTextBoxStyle" TargetType="{x:Type TextBox}">
+            <Border x:Name="border" CornerRadius="3"
+        BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+            </Border>
+        </ControlTemplate>
+        
+        <Style x:Key="NoHighlightButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </Window.Resources>
+    <Grid Background="Black">
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,133" Name="StackPanelForTop"  Background="Black">
+            <Button Style="{StaticResource NoHighlightButtonStyle}" Margin="0,0,324,0"/>
+            <Button x:Name="btnExitFromContactUs" Style="{StaticResource NoHighlightButtonStyle}" Click="btnExitFromContactUs_Click"  Height="22" Width="29" Background="Black">
+                <Image Source="Images/ExitForLogin.png" Height="18" Width="24"/>
+            </Button>
+        </StackPanel>
+        <TextBlock  Text="Свяжитесь с нами:" Margin="95,14,96,112" Foreground="White" FontSize="20" FontFamily="Segoe UI"/>
+        <TextBox Text=" itcossackquestions@gmail.com" Name="tbForMail" Margin="18,66,107,66" IsReadOnly="True"  FontSize="16" FontFamily="Segoe UI"  Template="{DynamicResource RoundedTextBoxStyle}"/>
+        <TextBlock x:Name="tbCopiedNotification" Text="Текст скопирован" Visibility="Collapsed" Margin="255,41,6,96" Foreground="White" FontFamily="Segoe UI" FontSize="13"/>
+        <Button x:Name="btcCopy" Click="btcCopy_Click" Style="{DynamicResource RoundedButtonStyle2}" Margin="286,64,41,64"  FontSize="15" FontFamily="Segoe UI" Background="White" Foreground="Black" FontWeight="DemiBold">
+            <Image Source="Images\Copy.png"/>
+        </Button>
+        <Button x:Name="btnOpenMail" Content="Связаться" Click="btnOpenMail_Click" Margin="64,111,65,20"  FontSize="15" FontFamily="Segoe UI" Style="{DynamicResource RoundedButtonStyle}" Background="White" Foreground="Black" FontWeight="DemiBold"/>
+    </Grid>
+</Window>

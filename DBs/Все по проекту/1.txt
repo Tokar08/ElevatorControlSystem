@@ -1,0 +1,23 @@
+USE master;
+
+IF EXISTS (SELECT * FROM sys.databases WHERE name = 'AppDefectsDB') 
+BEGIN 
+    ALTER DATABASE AppDefectsDB SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE AppDefectsDB;
+END;
+
+CREATE DATABASE AppDefectsDB;
+
+USE AppDefectsDB;
+
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'AppDefects')
+    DROP TABLE AppDefects;
+
+CREATE TABLE AppDefects (
+    id INT PRIMARY KEY IDENTITY(1, 1) NOT NULL,
+    description NVARCHAR(MAX) NOT NULL,
+    createdDate DATETIME NOT NULL,
+    createdBy NVARCHAR(255) NOT NULL,
+    companyName NVARCHAR(255) NOT NULL,
+    status BIT NOT NULL
+);
